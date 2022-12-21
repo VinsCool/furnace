@@ -37,7 +37,7 @@ const char* regCheatSheetPOKEY[]={
   "AUDCTL", "8",
   NULL
 };
-
+/*
 // LLsLSsLLsSLsLLn
 const unsigned char snapPeriodLong[15]={
   0, 1, 1, 3, 3, 6, 6, 7, 7, 10, 10, 12, 12, 13, 13
@@ -55,7 +55,7 @@ const unsigned char snapPeriodLong16[15]={
 const unsigned char snapPeriodShort16[15]={
   1, 1, 1, 4, 4, 4, 4, 4, 10, 10, 10, 10, 13, 13, 13
 };
-
+*/
 const unsigned char waveMap[8]={
   0, 1, 2, 3, 4, 5, 6, 6
 };
@@ -131,69 +131,84 @@ void DivPlatformPOKEY::tick(bool sysTick) {
 
   for (int i=0; i<4; i++) {
     if (chan[i].freqChanged || chan[i].keyOn || chan[i].keyOff) {
-      chan[i].freq=parent->calcFreq(chan[i].baseFreq,chan[i].pitch,chan[i].fixedArp?chan[i].baseNoteOverride:chan[i].arpOff,chan[i].fixedArp,true,0,chan[i].pitch2,chipClock,CHIP_DIVIDER);
+	// variables for pitch calculation, divisors must never be 0!
+	double divisor = 1;
+	int coarse_divisor = 1;
+	int cycle = 1;
 
-      if ((i==0 && !(audctl&64)) || (i==2 && !(audctl&32)) || i==1 || i==3) {
-        chan[i].freq/=7;
-        switch (chan[i].wave) {
-          case 6:
-            chan[i].freq/=5;
-            chan[i].freq>>=1;
-            break;
-          case 7:
-            if (audctl&1) {
-              chan[i].freq/=5;
-            } else {
-              chan[i].freq/=15;
-            }
-            chan[i].freq>>=1;
-            break;
-          default:
-            chan[i].freq>>=2;
-            break;
-        }
-      } else if ((i==0 && audctl&64) || (i==2 && audctl&32)) {
-        switch (chan[i].wave) {
-          case 6:
-            chan[i].freq<<=1;
-            chan[i].freq/=5;
-            break;
-          case 7:
-            chan[i].freq<<=1;
-            chan[i].freq/=15;
-            break;
-        }
+	// register variables
+	bool CLOCK_15 = audctl & 0x01;
+	//bool HPF_CH24 = audctl & 0x02;
+	//bool HPF_CH13 = audctl & 0x04;
+	bool JOIN_34 = audctl & 0x08;
+	bool JOIN_12 = audctl & 0x10;
+	bool CH3_179 = audctl & 0x20;
+	bool CH1_179 = audctl & 0x40;
+	//bool POLY9 = audctl & 0x80;
+
+	// combined modes for some special output... 
+	bool JOIN_16BIT = (((JOIN_12 && CH1_179) && i == 0) || ((JOIN_34 && CH3_179) && i == 2)) ? 1 : 0;
+	bool CLOCK_179 = ((CH1_179 && i == 0) || (CH3_179 && i == 2)) ? 1 : 0;
+	if (JOIN_16BIT || CLOCK_179) CLOCK_15 = 0;	// override, these 2 take priority over 15khz mode if they are enabled at the same time
+
+	if (JOIN_16BIT) cycle = 7;
+	else if (CLOCK_179) cycle = 4;
+	else coarse_divisor = (CLOCK_15) ? 114 : 28;
+	
+	// use the modulo flags to make sure the correct timbre will be output
+	switch (chan[i].wave) 
+	{
+	case 1:
+	case 3:
+		divisor = 31;	// Bell tones, not MOD31
+		break;
+	case 2:
+		divisor = 77.5;	// Smooth tones, MOD3 but not MOD5 or MOD31
+		break;
+	case 6:
+		divisor = 2.5;	// Buzzy tones, MOD3 but not MOD5
+		break;
+	case 7:
+		divisor = 7.5;	// Gritty tones, neither MOD3 or MOD5
+		break;
+	default:
+		//Distortion A is assumed if no valid parameter is supplied 
+		break;
+	}
+	
+      chan[i].freq=parent->calcFreq(chan[i].baseFreq,chan[i].pitch,chan[i].fixedArp?chan[i].baseNoteOverride:chan[i].arpOff,chan[i].fixedArp,true,0,chan[i].pitch2,chipClock,(coarse_divisor*divisor))-cycle;
+      
+      // insert whatever delta method that could be suitable here... 
+      bool MOD3 = ((chan[i].freq + cycle) % 3 == 0);
+      bool MOD5 = ((chan[i].freq + cycle) % 5 == 0);
+      bool MOD7 = ((chan[i].freq + cycle) % 7 == 0);
+      bool MOD15 = ((chan[i].freq + cycle) % 15 == 0);
+      bool MOD31 = ((chan[i].freq + cycle) % 31 == 0);
+      bool MOD73 = ((chan[i].freq + cycle) % 73 == 0);
+ 
+      // adjustments by modulo
+      // TODO: find a way to get the target pitch (in Hz) to process this part...
+      switch (chan[i].wave)
+      {
+      	case 1:
+      	case 3:
+      		//if (MOD31) chan[i].freq = deltaFreq(pitch, chan[i].freq, chipClock, coarse_divisor, divisor, cycle, chan[i].wave);
+      		break;
+      	case 2:
+      		//if (!(MOD3 || CLOCK_15) || MOD5) chan[i].freq = deltaFreq(pitch, chan[i].freq, chipClock, coarse_divisor, divisor, cycle, chan[i].wave);
+      		break;
+      	case 7:
+      		//if (MOD3 || MOD5) chan[i].freq = deltaFreq(pitch, chan[i].freq, chipClock, coarse_divisor, divisor, cycle, chan[i].wave);
+      		break;
+      	case 6:
+      		//if (!(MOD3 || CLOCK_15) || MOD5) chan[i].freq = deltaFreq(pitch, chan[i].freq, chipClock, coarse_divisor, divisor, cycle, chan[i].wave);
+      		break;
       }
 
-      if (audctl&1 && !((i==0 && audctl&64) || (i==2 && audctl&32))) {
-        chan[i].freq>>=2;
-      }
-
-      if (--chan[i].freq<0) chan[i].freq=0;
-
-      // snap buzz periods
-      int minFreq8=255;
-      if (chan[i].wave==7) {
-        if ((i==0 && audctl&64) || (i==2 && audctl&32)) {
-          chan[i].freq=15*(chan[i].freq/15)+snapPeriodLong16[(chan[i].freq%15)]+1;
-        } else {
-          if (!(audctl&1)) chan[i].freq=15*(chan[i].freq/15)+snapPeriodLong[(chan[i].freq%15)];
-        }
-      } else if (chan[i].wave==6) {
-        if ((i==0 && audctl&64) || (i==2 && audctl&32)) {
-          chan[i].freq=15*(chan[i].freq/15)+snapPeriodShort16[(chan[i].freq%15)]+1;
-        } else {
-          if (!(audctl&1)) chan[i].freq=15*(chan[i].freq/15)+snapPeriodShort[(chan[i].freq%15)];
-        }
-        minFreq8=251;
-      }
-
-      if ((i==0 && audctl&16) || (i==2 && audctl&8)) {
-        if (chan[i].freq>65535) chan[i].freq=65535;
-      } else {
-        if (chan[i].freq>minFreq8) chan[i].freq=minFreq8;
-      }
-
+      if (chan[i].freq < 0) chan[i].freq = 0;
+      if (!JOIN_16BIT && chan[i].freq > 0xFF) chan[i].freq = 0xFF;
+      if (JOIN_16BIT && chan[i].freq > 0xFFFF) chan[i].freq = 0xFFFF;
+      
       // write frequency
       if ((i==1 && audctl&16) || (i==3 && audctl&8)) {
         // ignore - channel is paired
@@ -226,6 +241,77 @@ void DivPlatformPOKEY::tick(bool sysTick) {
     }
   }
 }
+
+        int DivPlatformPOKEY::deltaFreq(double pitch, int freq, double clock, int coarse_divisor, double divisor, int cycle, int wave)
+        {
+            // Begin from the currently invalid Freq
+            int tmp_freq_up = freq;
+            int tmp_freq_down = freq;
+
+            // The Distortion and Timbre are made up from different combinations, invalid combinations will produce garbage tones
+            switch (wave)
+            {
+                //case Timbre.SMOOTH_4:   // Distortion 4 Smooth, verify MOD3 integrity
+                case 2:
+                    for (int o = 0; o < 6; o++)
+                    {
+                        if ((tmp_freq_up + cycle) % 3 != 0 || (tmp_freq_up + cycle) % 5 == 0 || (tmp_freq_up + cycle) % 31 == 0) tmp_freq_up++;
+                        if ((tmp_freq_down + cycle) % 3 != 0 || (tmp_freq_down + cycle) % 5 == 0 || (tmp_freq_down + cycle) % 31 == 0) tmp_freq_down--;
+                    }
+                    break;
+
+                //case Timbre.BUZZY_C:    // Distortion C Buzzy, verify MOD3 integrity
+                case 6:
+                    if (coarse_divisor == 114)  // 15kHz mode
+                    {
+                        for (int o = 0; o < 3; o++) // MOD5 must be avoided!
+                        {
+                            if ((tmp_freq_up + cycle) % 5 == 0) tmp_freq_up++;
+                            if ((tmp_freq_down + cycle) % 5 == 0) tmp_freq_down--;
+                        }
+                        break;
+                    }
+                    for (int o = 0; o < 6; o++)
+                    {
+                        if ((tmp_freq_up + cycle) % 3 != 0 || (tmp_freq_up + cycle) % 5 == 0) tmp_freq_up++;
+                        if ((tmp_freq_down + cycle) % 3 != 0 || (tmp_freq_down + cycle) % 5 == 0) tmp_freq_down--;
+                    }
+                    break;
+
+                //case Timbre.GRITTY_C:   // Distortion C Gritty, verify neither MOD3 or MOD5 is used
+                case 7:
+                    if (coarse_divisor == 114)  // 15kHz mode
+                    {
+                        for (int o = 0; o < 3; o++) // MOD5 must be avoided!
+                        {
+                            if ((tmp_freq_up + cycle) % 5 == 0) tmp_freq_up++;
+                            if ((tmp_freq_down + cycle) % 5 == 0) tmp_freq_down--;
+                        }
+                        break;
+                    }
+                    for (int o = 0; o < 6; o++)
+                    {
+                        if ((tmp_freq_up + cycle) % 3 == 0 || (tmp_freq_up + cycle) % 5 == 0) tmp_freq_up++;
+                        if ((tmp_freq_down + cycle) % 3 == 0 || (tmp_freq_down + cycle) % 5 == 0) tmp_freq_down--;
+                    }
+                    break;
+
+                default:    // Simpliest delta method, shift up and down by 1
+                    tmp_freq_up++;
+                    tmp_freq_down--;
+                    break;
+            }
+
+            // First delta, up
+            double tmp_pitch_up = pitch - (((clock / (coarse_divisor * divisor)) / (freq + cycle)) / 2);
+
+            // Second delta, down
+            double tmp_pitch_down = (((clock / (coarse_divisor * divisor)) / (freq + cycle)) / 2) - pitch;
+
+            // Compare the 2 values with a subtraction, and return whichever is nearest to the wanted pitch
+            if (tmp_pitch_down - tmp_pitch_up > 0) return tmp_freq_up;
+            return tmp_freq_down;
+        }
 
 int DivPlatformPOKEY::dispatch(DivCommand c) {
   switch (c.cmd) {

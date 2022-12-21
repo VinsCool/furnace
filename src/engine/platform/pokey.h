@@ -63,6 +63,7 @@ class DivPlatformPOKEY: public DivDispatch {
     void reset();
     void forceIns();
     void tick(bool sysTick=true);
+    int deltaFreq(double pitch, int freq, double clock, int coarse_divisor, double divisor, int cycle, int wave);
     void muteChannel(int ch, bool mute);
     bool keyOffAffectsArp(int ch);
     float getPostAmp();
