@@ -352,7 +352,7 @@ extern/adpcm/yma_codec.c
 extern/adpcm/ymb_codec.c
 extern/adpcm/ymz_codec.c
 
-extern/Nuked-OPN2/ym3438.c
+extern/opn/ym3438.c
 extern/Nuked-PSG/ympsg.c
 extern/opm/opm.c
 extern/Nuked-OPLL/opll.c
@@ -425,6 +425,7 @@ src/engine/platform/sound/ymfm/ymfm_ssg.cpp
 src/engine/platform/sound/lynx/Mikey.cpp
 
 src/engine/platform/sound/pokey/mzpokeysnd.c
+src/engine/platform/sound/pokey/AltASAP.cpp
 
 src/engine/platform/sound/qsound.c
 
@@ -621,15 +622,13 @@ src/gui/volMeter.cpp
 src/gui/gui.cpp
 )
 
-if (WIN32 OR APPLE)
+if (WIN32 AND (MSVC OR CMAKE_SIZEOF_VOID_P EQUAL 8))
   list(APPEND GUI_SOURCES extern/nfd-modified/src/nfd_common.cpp)
-endif()
-
-if (WIN32)
   list(APPEND GUI_SOURCES extern/nfd-modified/src/nfd_win.cpp)
 endif()
 
 if (APPLE)
+  list(APPEND GUI_SOURCES extern/nfd-modified/src/nfd_common.cpp)
   list(APPEND GUI_SOURCES src/gui/macstuff.m)
   list(APPEND GUI_SOURCES extern/nfd-modified/src/nfd_cocoa.mm)
 endif()
@@ -706,6 +705,10 @@ if (WIN32)
   list(APPEND DEPENDENCIES_LIBRARIES shlwapi)
   if (NOT MSVC)
     list(APPEND DEPENDENCIES_LIBRARIES -static)
+  endif()
+  # support Windows XP
+  if (CMAKE_SIZEOF_VOID_P EQUAL 4 AND NOT MSVC)
+    list(APPEND DEPENDENCIES_DEFINES "_WIN32_WINNT=0x0501")
   endif()
 elseif (APPLE)
   find_library(COCOA Cocoa REQUIRED)

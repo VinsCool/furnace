@@ -339,7 +339,7 @@ void DivPlatformGenesis::tick(bool sysTick) {
     if (chan[i].std.pitch.had) {
       if (chan[i].std.pitch.mode) {
         chan[i].pitch2+=chan[i].std.pitch.val;
-        CLAMP_VAR(chan[i].pitch2,-32768,32767);
+        CLAMP_VAR(chan[i].pitch2,-1048576,1048575);
       } else {
         chan[i].pitch2=chan[i].std.pitch.val;
       }
@@ -479,7 +479,7 @@ void DivPlatformGenesis::tick(bool sysTick) {
     }
   }
 
-  for (int i=0; i<7; i++) {
+  for (int i=0; i<csmChan; i++) {
     if (i==2 && extMode) continue;
     if (chan[i].freqChanged) {
       if (parent->song.linearPitch==2) {
@@ -554,7 +554,7 @@ int DivPlatformGenesis::dispatch(DivCommand c) {
   switch (c.cmd) {
     case DIV_CMD_NOTE_ON: {
       DivInstrument* ins=parent->getIns(chan[c.chan].ins,DIV_INS_FM);
-      if (c.chan==csmChan && extMode && softPCM) { // CSM
+      if (c.chan==csmChan && extMode) { // CSM
         chan[c.chan].macroInit(ins);
         chan[c.chan].insChanged=false;
 
@@ -574,6 +574,8 @@ int DivPlatformGenesis::dispatch(DivCommand c) {
           rWrite(0x2b,1<<7);
         } else if (chan[c.chan].furnaceDac) {
           chan[c.chan].dacMode=0;
+          rWrite(0x2b,0<<7);
+        } else if (!chan[c.chan].dacMode) {
           rWrite(0x2b,0<<7);
         }
       }
@@ -1150,7 +1152,7 @@ void DivPlatformGenesis::reset() {
     fm_ymfm->reset();
   }
   OPN2_Reset(&fm);
-  OPN2_SetChipType(ladder?ym3438_mode_ym2612:0);
+  OPN2_SetChipType(&fm,ladder?ym3438_mode_ym2612:0);
   if (dumpWrites) {
     addWrite(0xffffffff,0);
   }
@@ -1217,7 +1219,7 @@ void DivPlatformGenesis::poke(std::vector<DivRegWrite>& wlist) {
 }
 
 int DivPlatformGenesis::getPortaFloor(int ch) {
-  return (ch>5)?12:0;
+  return 0;
 }
 
 void DivPlatformGenesis::setYMFM(bool use) {
@@ -1248,7 +1250,8 @@ void DivPlatformGenesis::setFlags(const DivConfig& flags) {
   }
   ladder=flags.getBool("ladderEffect",false);
   noExtMacros=flags.getBool("noExtMacros",false);
-  OPN2_SetChipType(ladder?ym3438_mode_ym2612:0);
+  fbAllOps=flags.getBool("fbAllOps",false);
+  OPN2_SetChipType(&fm,ladder?ym3438_mode_ym2612:0);
   CHECK_CUSTOM_CLOCK;
   if (useYMFM) {
     if (fm_ymfm!=NULL) delete fm_ymfm;

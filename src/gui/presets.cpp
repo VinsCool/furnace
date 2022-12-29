@@ -56,6 +56,12 @@ void FurnaceGUI::initSystemPresets() {
     }
   );
   ENTRY(
+    "Sega Genesis (CSM)", {
+      CH(DIV_SYSTEM_YM2612_CSM, 64, 0, ""),
+      CH(DIV_SYSTEM_SMS, 32, 0, "")
+    }
+  );
+  ENTRY(
     "Sega Genesis (DualPCM)", {
       CH(DIV_SYSTEM_YM2612_DUALPCM, 64, 0, ""),
       CH(DIV_SYSTEM_SMS, 32, 0, "")
@@ -88,6 +94,16 @@ void FurnaceGUI::initSystemPresets() {
     }
   );
   ENTRY(
+    "Sega Genesis (CSM with Sega CD)", {
+      CH(DIV_SYSTEM_YM2612_CSM, 64, 0, ""),
+      CH(DIV_SYSTEM_SMS, 32, 0, ""),
+      CH(DIV_SYSTEM_RF5C68, 64, 0,
+        "clockSel=2\n"
+        "chipType=1\n"
+      )
+    }
+  );
+  ENTRY(
     "Sega Master System", {
       CH(DIV_SYSTEM_SMS, 64, 0, "")
     }
@@ -112,6 +128,19 @@ void FurnaceGUI::initSystemPresets() {
   ENTRY(
     "Game Boy", {
       CH(DIV_SYSTEM_GB, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Neo Geo Pocket", {
+      CH(DIV_SYSTEM_T6W28, 64, 0, ""),
+      CH(DIV_SYSTEM_PCM_DAC, 64, -127, 
+        "rate=11025\n"
+        "outDepth=5\n"
+      ),
+      CH(DIV_SYSTEM_PCM_DAC, 64, 127, 
+        "rate=11025\n"
+        "outDepth=5\n"
+      ) // don't know what the actual sample rate is
     }
   );
   ENTRY(
@@ -188,6 +217,12 @@ void FurnaceGUI::initSystemPresets() {
   ENTRY(
     "Atari 2600/7800", {
       CH(DIV_SYSTEM_TIA, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Atari 7800 + Ballblazer/Commando", {
+      CH(DIV_SYSTEM_TIA, 64, 0, ""),
+      CH(DIV_SYSTEM_POKEY, 64, 0, "")
     }
   );
   ENTRY(
@@ -311,7 +346,7 @@ void FurnaceGUI::initSystemPresets() {
   );
   ENTRY(
     "MSX", {
-      CH(DIV_SYSTEM_AY8910, 64, 0, "chipType=1")
+      CH(DIV_SYSTEM_AY8910, 64, 0, "clockSel=0\nchipType=1")
     }
   );
   ENTRY(
@@ -1058,6 +1093,12 @@ void FurnaceGUI::initSystemPresets() {
     }
   );
   ENTRY(
+    "FM Towns (CSM)", {
+      CH(DIV_SYSTEM_YM2612_CSM, 64, 0, "clockSel=2"), // YM3438
+      CH(DIV_SYSTEM_RF5C68, 64, 0, "")
+    }
+  );
+  ENTRY(
     "Commander X16", {
       CH(DIV_SYSTEM_VERA, 64, 0, ""),
       CH(DIV_SYSTEM_YM2151, 32, 0, "")
@@ -1069,458 +1110,6 @@ void FurnaceGUI::initSystemPresets() {
         "clockSel=6\n"
         "chipType=8\n" // SN94624 447KHz
       )
-    }
-  );
-  CATEGORY_END;
-
-  CATEGORY_BEGIN("FM","chips which use frequency modulation (FM) to generate sound.\nsome of these also pack more (like square and sample channels).");
-  ENTRY(
-    "Yamaha YM2151 (OPM)", {
-      CH(DIV_SYSTEM_YM2151, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Yamaha YM2203 (OPN)", {
-      CH(DIV_SYSTEM_YM2203, 64, 0, "clockSel=3")
-    }
-  );
-  ENTRY(
-    "Yamaha YM2203 (extended channel 3)", {
-      CH(DIV_SYSTEM_YM2203_EXT, 64, 0, "clockSel=3")
-    }
-  );
-  ENTRY(
-    "Yamaha YM2608 (OPNA)", {
-      CH(DIV_SYSTEM_YM2608, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Yamaha YM2608 (extended channel 3)", {
-      CH(DIV_SYSTEM_YM2608_EXT, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Yamaha YM2610 (OPNB)", {
-      CH(DIV_SYSTEM_YM2610_FULL, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Yamaha YM2610 (extended channel 2)", {
-      CH(DIV_SYSTEM_YM2610_FULL_EXT, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Yamaha YM2610B (OPNB2)", {
-      CH(DIV_SYSTEM_YM2610B, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Yamaha YM2610B (extended channel 3)", {
-      CH(DIV_SYSTEM_YM2610B_EXT, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Yamaha YM2612 (OPN2)", {
-      CH(DIV_SYSTEM_YM2612, 64, 0, "ladderEffect=true")
-    }
-  );
-  ENTRY(
-    "Yamaha YM2612 (extended channel 3)", {
-      CH(DIV_SYSTEM_YM2612_EXT, 64, 0, "ladderEffect=true")
-    }
-  );
-  ENTRY(
-    "Yamaha YM2612 (OPN2) with DualPCM", {
-      CH(DIV_SYSTEM_YM2612_DUALPCM, 64, 0, "ladderEffect=true")
-    }
-  );
-  ENTRY(
-    "Yamaha YM2612 (extended channel 3) with DualPCM", {
-      CH(DIV_SYSTEM_YM2612_DUALPCM_EXT, 64, 0, "ladderEffect=true")
-    }
-  );
-  ENTRY(
-    "Yamaha YM2413 (OPLL)", {
-      CH(DIV_SYSTEM_OPLL, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Yamaha YM2413 (drums mode)", {
-      CH(DIV_SYSTEM_OPLL_DRUMS, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Yamaha YM2414 (OPZ)", {
-      CH(DIV_SYSTEM_OPZ, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Yamaha YM3438 (OPN2C)", {
-      CH(DIV_SYSTEM_YM2612, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Yamaha YM3438 (extended channel 3)", {
-      CH(DIV_SYSTEM_YM2612_EXT, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Yamaha YM3438 (OPN2C) with DualPCM", {
-      CH(DIV_SYSTEM_YM2612_DUALPCM, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Yamaha YM3438 (extended channel 3) with DualPCM", {
-      CH(DIV_SYSTEM_YM2612_DUALPCM_EXT, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Yamaha YM3526 (OPL)", {
-      CH(DIV_SYSTEM_OPL, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Yamaha YM3526 (drums mode)", {
-      CH(DIV_SYSTEM_OPL_DRUMS, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Yamaha Y8950", {
-      CH(DIV_SYSTEM_Y8950, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Yamaha Y8950 (drums mode)", {
-      CH(DIV_SYSTEM_Y8950_DRUMS, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Yamaha YM3812 (OPL2)", {
-      CH(DIV_SYSTEM_OPL2, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Yamaha YM3812 (drums mode)", {
-      CH(DIV_SYSTEM_OPL2_DRUMS, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Yamaha YMF262 (OPL3)", {
-      CH(DIV_SYSTEM_OPL3, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Yamaha YMF262 (drums mode)", {
-      CH(DIV_SYSTEM_OPL3_DRUMS, 64, 0, "")
-    }
-  );
-  if (settings.hiddenSystems) {
-    ENTRY(
-      "Yamaha YMU759 (MA-2)", {
-        CH(DIV_SYSTEM_YMU759, 64, 0, "")
-      }
-    );
-  }
-  CATEGORY_END;
-
-  CATEGORY_BEGIN("Square","these chips generate square/pulse tones only (but may include noise).");
-  ENTRY(
-    "TI SN76489", {
-      CH(DIV_SYSTEM_SMS, 64, 0, "chipType=1")
-    }
-  );
-  ENTRY(
-    "TI SN76489A", {
-      CH(DIV_SYSTEM_SMS, 64, 0, "chipType=4")
-    }
-  );
-  ENTRY(
-    "TI SN76496", {
-      CH(DIV_SYSTEM_SMS, 64, 0, "chipType=5")
-    }
-  );
-  ENTRY(
-    "NCR 8496", {
-      CH(DIV_SYSTEM_SMS, 64, 0, "chipType=6")
-    }
-  );
-  ENTRY(
-    "Tandy PSSJ 3-voice sound", {
-      CH(DIV_SYSTEM_SMS, 64, 0, "chipType=7")
-      // 8 bit DAC
-    }
-  );
-  ENTRY(
-    "Sega PSG (SN76489-like)", {
-      CH(DIV_SYSTEM_SMS, 64, 0, ""),
-    }
-  );
-  ENTRY(
-    "Sega PSG (SN76489-like, Stereo)", {
-      CH(DIV_SYSTEM_SMS, 64, 0, "chipType=3")
-    }
-  );
-  ENTRY(
-    "TI SN94624", {
-      CH(DIV_SYSTEM_SMS, 64, 0,
-        "clockSel=6\n"
-        "chipType=8\n"
-      )
-    }
-  );
-  ENTRY(
-    "TI SN76494", {
-      CH(DIV_SYSTEM_SMS, 64, 0,
-        "clockSel=6\n"
-        "chipType=9\n"
-      )
-    }
-  );
-  ENTRY(
-    "Toshiba T6W28", {
-      CH(DIV_SYSTEM_T6W28, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "AY-3-8910", {
-      CH(DIV_SYSTEM_AY8910, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "AY-3-8914", {
-      CH(DIV_SYSTEM_AY8910, 64, 0, "chipType=3")
-    }
-  );
-  ENTRY(
-    "Yamaha YM2149(F)", {
-      CH(DIV_SYSTEM_AY8910, 64, 0, "chipType=1")
-    }
-  );
-  ENTRY(
-    "Philips SAA1099", {
-      CH(DIV_SYSTEM_SAA1099, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "PC Speaker", {
-      CH(DIV_SYSTEM_PCSPKR, 32, 0, "")
-    }
-  );
-  ENTRY(
-    "Pokémon Mini", {
-      CH(DIV_SYSTEM_POKEMINI, 32, 0, "")
-    }
-  );
-  ENTRY(
-    "Commodore VIC", {
-      CH(DIV_SYSTEM_VIC20, 64, 0, "clockSel=1")
-    }
-  );
-  ENTRY(
-    "OKI MSM5232", {
-      CH(DIV_SYSTEM_MSM5232, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Pong", {
-      CH(DIV_SYSTEM_PONG, 64, 0, "")
-    }
-  );
-  CATEGORY_END;
-
-  CATEGORY_BEGIN("Sample","chips/systems which use PCM or ADPCM samples for sound synthesis.");
-  ENTRY(
-    "Amiga", {
-      CH(DIV_SYSTEM_AMIGA, 64, 0, "clockSel=1")
-    },
-    "tickRate=50"
-  );
-  ENTRY(
-    "SegaPCM", {
-      CH(DIV_SYSTEM_SEGAPCM, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Capcom QSound", {
-      CH(DIV_SYSTEM_QSOUND, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Seta/Allumer X1-010", {
-      CH(DIV_SYSTEM_X1_010, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Yamaha YMZ280B (PCMD8)", {
-      CH(DIV_SYSTEM_YMZ280B, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Ricoh RF5C68", {
-      CH(DIV_SYSTEM_RF5C68, 64, 0, "")
-    }
-  ); 
-  ENTRY(
-    "OKI MSM6258", {
-      CH(DIV_SYSTEM_MSM6258, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "OKI MSM6295", {
-      CH(DIV_SYSTEM_MSM6295, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "SNES", {
-      CH(DIV_SYSTEM_SNES, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Konami K007232", {
-      CH(DIV_SYSTEM_K007232, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Irem GA20", {
-      CH(DIV_SYSTEM_GA20, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Generic PCM DAC", {
-      CH(DIV_SYSTEM_PCM_DAC, 64, 0, "")
-    }
-  );
-  CATEGORY_END;
-
-  CATEGORY_BEGIN("Wavetable","chips which use user-specified waveforms to generate sound.");
-  ENTRY(
-    "PC Engine", {
-      CH(DIV_SYSTEM_PCE, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Commodore PET (pseudo-wavetable)", {
-      CH(DIV_SYSTEM_PET, 64, 0, "")
-    },
-    "tickRate=50"
-  );
-  ENTRY(
-    "Konami Bubble System WSG", {
-      CH(DIV_SYSTEM_BUBSYS_WSG, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Konami SCC", {
-      CH(DIV_SYSTEM_SCC, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Konami SCC+", {
-      CH(DIV_SYSTEM_SCC_PLUS, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Namco WSG", {
-      CH(DIV_SYSTEM_NAMCO, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Namco C15 (8-channel mono)", {
-      CH(DIV_SYSTEM_NAMCO_15XX, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Namco C30 (8-channel stereo)", {
-      CH(DIV_SYSTEM_NAMCO_CUS30, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Namco 163", {
-      CH(DIV_SYSTEM_N163, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Famicom Disk System (chip)", {
-      CH(DIV_SYSTEM_FDS, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "WonderSwan", {
-      CH(DIV_SYSTEM_SWAN, 64, 0, "")
-    },
-    "tickRate=75.47169811320754716981"
-  );
-  ENTRY(
-    "Virtual Boy", {
-      CH(DIV_SYSTEM_VBOY, 64, 0, "")
-    },
-    "tickRate=50.2734877734878"
-  );
-  ENTRY(
-    "Seta/Allumer X1-010", {
-      CH(DIV_SYSTEM_X1_010, 64, 0, "")
-    }
-  );
-  CATEGORY_END;
-
-  CATEGORY_BEGIN("Specialized","chips/systems with unique sound synthesis methods.");
-  ENTRY(
-    "MOS Technology SID (6581)", {
-      CH(DIV_SYSTEM_C64_6581, 64, 0, "clockSel=1")
-    },
-    "tickRate=50.1245421"
-  );
-  ENTRY(
-    "MOS Technology SID (8580)", {
-      CH(DIV_SYSTEM_C64_8580, 64, 0, "clockSel=1")
-    },
-    "tickRate=50.1245421"
-  );
-  ENTRY(
-    "Microchip AY8930", {
-      CH(DIV_SYSTEM_AY8930, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Game Boy", {
-      CH(DIV_SYSTEM_GB, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Atari Lynx", {
-      CH(DIV_SYSTEM_LYNX, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Atari TIA", {
-      CH(DIV_SYSTEM_TIA, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "NES (Ricoh 2A03)", {
-      CH(DIV_SYSTEM_NES, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "Commander X16 (VERA only)", {
-      CH(DIV_SYSTEM_VERA, 64, 0, "")
-    }
-  );
-  ENTRY(
-    "ZX Spectrum (beeper only)", {
-      CH(DIV_SYSTEM_SFX_BEEPER, 64, 0, "")
-    }
-  );
-  if (settings.hiddenSystems) {
-    ENTRY(
-      "Dummy System", {
-        CH(DIV_SYSTEM_DUMMY, 64, 0, "")
-      }
-    );
-  }
-  ENTRY(
-    "tildearrow Sound Unit", {
-      CH(DIV_SYSTEM_SOUND_UNIT, 64, 0, "")
     }
   );
   CATEGORY_END;
@@ -2021,6 +1610,33 @@ void FurnaceGUI::initSystemPresets() {
     }
   );
   ENTRY(
+    "Atari Marble Madness", {
+      CH(DIV_SYSTEM_YM2151, 64, 0, ""),
+      CH(DIV_SYSTEM_POKEY, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Atari Championship Sprint", {
+      CH(DIV_SYSTEM_YM2151, 64, 0, ""),
+      CH(DIV_SYSTEM_POKEY, 64, 0, ""),
+      CH(DIV_SYSTEM_POKEY, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Atari Tetris", {
+      CH(DIV_SYSTEM_POKEY, 64, 0, ""),
+      CH(DIV_SYSTEM_POKEY, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Atari I, Robot", {
+      CH(DIV_SYSTEM_POKEY, 64, 0, "customClock=1512000"),
+      CH(DIV_SYSTEM_POKEY, 64, 0, "customClock=1512000"),
+      CH(DIV_SYSTEM_POKEY, 64, 0, "customClock=1512000"),
+      CH(DIV_SYSTEM_POKEY, 64, 0, "customClock=1512000")
+    }
+  );
+  ENTRY(
     "Data East Karnov", {
       CH(DIV_SYSTEM_YM2203, 64, 0, "clockSel=5"), // 1.5MHz
       CH(DIV_SYSTEM_OPL, 64, 0, "clockSel=3") // 3MHz
@@ -2252,6 +1868,20 @@ void FurnaceGUI::initSystemPresets() {
     }
   );
   ENTRY(
+    "Alpha denshi Equites", {
+      CH(DIV_SYSTEM_MSM5232, 64, 0, "customClock=6144000"),
+      CH(DIV_SYSTEM_AY8910, 64, 0, "clockSel=14"),
+      CH(DIV_SYSTEM_PCM_DAC, 64, 0, 
+         "rate=11025\n" 
+         "outDepth=5\n"
+      ),
+      CH(DIV_SYSTEM_PCM_DAC, 64, 0, 
+         "rate=11025\n" 
+         "outDepth=5\n"
+      ) // don't know what the actual sample rate is
+    }
+  );
+  ENTRY(
     "Neo Geo MVS", {
       CH(DIV_SYSTEM_YM2610_FULL, 64, 0, "")
     }
@@ -2321,6 +1951,43 @@ void FurnaceGUI::initSystemPresets() {
   ENTRY(
     "Taito Arcade (extended channel 3)", {
       CH(DIV_SYSTEM_YM2610B_EXT, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Taito Metal Soldier Isaac II", {
+      CH(DIV_SYSTEM_MSM5232, 64, 0, ""),
+      CH(DIV_SYSTEM_AY8910, 64, 0, "clockSel=3"),
+      CH(DIV_SYSTEM_AY8910, 64, 0, "clockSel=3")
+    }
+  );
+  ENTRY(
+    "Taito The Fairyland Story", {
+      CH(DIV_SYSTEM_MSM5232, 64, 0, ""),
+      CH(DIV_SYSTEM_AY8910, 64, 0, 
+         "clockSel=3\n"
+         "chipType=1\n"
+      ),
+      CH(DIV_SYSTEM_PCM_DAC, 64, 0, 
+         "rate=11025\n" 
+         "outDepth=7\n"
+      ) // don't know what the actual sample rate is
+    }
+  );
+  ENTRY(
+    "Taito Wyvern F-0", {
+      CH(DIV_SYSTEM_MSM5232, 64, 0, ""),
+      CH(DIV_SYSTEM_AY8910, 64, 0, 
+         "clockSel=3\n"
+         "chipType=1\n"
+      ),
+      CH(DIV_SYSTEM_AY8910, 64, 0, 
+         "clockSel=3\n"
+         "chipType=1\n"
+      ),
+      CH(DIV_SYSTEM_PCM_DAC, 64, 0, 
+         "rate=11025\n" 
+         "outDepth=7\n"
+      ) // don't know what the actual sample rate is
     }
   );
   ENTRY(
@@ -2429,6 +2096,475 @@ void FurnaceGUI::initSystemPresets() {
   );
   CATEGORY_END;
 
+
+  CATEGORY_BEGIN("FM","chips which use frequency modulation (FM) to generate sound.\nsome of these also pack more (like square and sample channels).");
+  ENTRY(
+    "Yamaha YM2151 (OPM)", {
+      CH(DIV_SYSTEM_YM2151, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Yamaha YM2203 (OPN)", {
+      CH(DIV_SYSTEM_YM2203, 64, 0, "clockSel=3")
+    }
+  );
+  ENTRY(
+    "Yamaha YM2203 (extended channel 3)", {
+      CH(DIV_SYSTEM_YM2203_EXT, 64, 0, "clockSel=3")
+    }
+  );
+  ENTRY(
+    "Yamaha YM2608 (OPNA)", {
+      CH(DIV_SYSTEM_YM2608, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Yamaha YM2608 (extended channel 3)", {
+      CH(DIV_SYSTEM_YM2608_EXT, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Yamaha YM2610 (OPNB)", {
+      CH(DIV_SYSTEM_YM2610_FULL, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Yamaha YM2610 (extended channel 2)", {
+      CH(DIV_SYSTEM_YM2610_FULL_EXT, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Yamaha YM2610B (OPNB2)", {
+      CH(DIV_SYSTEM_YM2610B, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Yamaha YM2610B (extended channel 3)", {
+      CH(DIV_SYSTEM_YM2610B_EXT, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Yamaha YM2612 (OPN2)", {
+      CH(DIV_SYSTEM_YM2612, 64, 0, "ladderEffect=true")
+    }
+  );
+  ENTRY(
+    "Yamaha YM2612 (extended channel 3)", {
+      CH(DIV_SYSTEM_YM2612_EXT, 64, 0, "ladderEffect=true")
+    }
+  );
+  ENTRY(
+    "Yamaha YM2612 (OPN2) CSM", {
+      CH(DIV_SYSTEM_YM2612_CSM, 64, 0, "ladderEffect=true")
+    }
+  );
+  ENTRY(
+    "Yamaha YM2612 (OPN2) with DualPCM", {
+      CH(DIV_SYSTEM_YM2612_DUALPCM, 64, 0, "ladderEffect=true")
+    }
+  );
+  ENTRY(
+    "Yamaha YM2612 (extended channel 3) with DualPCM", {
+      CH(DIV_SYSTEM_YM2612_DUALPCM_EXT, 64, 0, "ladderEffect=true")
+    }
+  );
+  ENTRY(
+    "Yamaha YM2413 (OPLL)", {
+      CH(DIV_SYSTEM_OPLL, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Yamaha YM2413 (drums mode)", {
+      CH(DIV_SYSTEM_OPLL_DRUMS, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Yamaha YM2414 (OPZ)", {
+      CH(DIV_SYSTEM_OPZ, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Yamaha YM3438 (OPN2C)", {
+      CH(DIV_SYSTEM_YM2612, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Yamaha YM3438 (extended channel 3)", {
+      CH(DIV_SYSTEM_YM2612_EXT, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Yamaha YM3438 (OPN2C) CSM", {
+      CH(DIV_SYSTEM_YM2612_CSM, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Yamaha YM3438 (OPN2C) with DualPCM", {
+      CH(DIV_SYSTEM_YM2612_DUALPCM, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Yamaha YM3438 (extended channel 3) with DualPCM", {
+      CH(DIV_SYSTEM_YM2612_DUALPCM_EXT, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Yamaha YM3526 (OPL)", {
+      CH(DIV_SYSTEM_OPL, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Yamaha YM3526 (drums mode)", {
+      CH(DIV_SYSTEM_OPL_DRUMS, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Yamaha Y8950", {
+      CH(DIV_SYSTEM_Y8950, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Yamaha Y8950 (drums mode)", {
+      CH(DIV_SYSTEM_Y8950_DRUMS, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Yamaha YM3812 (OPL2)", {
+      CH(DIV_SYSTEM_OPL2, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Yamaha YM3812 (drums mode)", {
+      CH(DIV_SYSTEM_OPL2_DRUMS, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Yamaha YMF262 (OPL3)", {
+      CH(DIV_SYSTEM_OPL3, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Yamaha YMF262 (drums mode)", {
+      CH(DIV_SYSTEM_OPL3_DRUMS, 64, 0, "")
+    }
+  );
+  if (settings.hiddenSystems) {
+    ENTRY(
+      "Yamaha YMU759 (MA-2)", {
+        CH(DIV_SYSTEM_YMU759, 64, 0, "")
+      }
+    );
+  }
+  CATEGORY_END;
+
+  CATEGORY_BEGIN("Square","these chips generate square/pulse tones only (but may include noise).");
+  ENTRY(
+    "TI SN76489", {
+      CH(DIV_SYSTEM_SMS, 64, 0, "chipType=1")
+    }
+  );
+  ENTRY(
+    "TI SN76489A", {
+      CH(DIV_SYSTEM_SMS, 64, 0, "chipType=4")
+    }
+  );
+  ENTRY(
+    "TI SN76496", {
+      CH(DIV_SYSTEM_SMS, 64, 0, "chipType=5")
+    }
+  );
+  ENTRY(
+    "NCR 8496", {
+      CH(DIV_SYSTEM_SMS, 64, 0, "chipType=6")
+    }
+  );
+  ENTRY(
+    "Tandy PSSJ 3-voice sound", {
+      CH(DIV_SYSTEM_SMS, 64, 0, "chipType=7")
+      // 8 bit DAC
+    }
+  );
+  ENTRY(
+    "Sega PSG (SN76489-like)", {
+      CH(DIV_SYSTEM_SMS, 64, 0, ""),
+    }
+  );
+  ENTRY(
+    "Sega PSG (SN76489-like, Stereo)", {
+      CH(DIV_SYSTEM_SMS, 64, 0, "chipType=3")
+    }
+  );
+  ENTRY(
+    "TI SN94624", {
+      CH(DIV_SYSTEM_SMS, 64, 0,
+        "clockSel=6\n"
+        "chipType=8\n"
+      )
+    }
+  );
+  ENTRY(
+    "TI SN76494", {
+      CH(DIV_SYSTEM_SMS, 64, 0,
+        "clockSel=6\n"
+        "chipType=9\n"
+      )
+    }
+  );
+  ENTRY(
+    "Toshiba T6W28", {
+      CH(DIV_SYSTEM_T6W28, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "AY-3-8910", {
+      CH(DIV_SYSTEM_AY8910, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "AY-3-8914", {
+      CH(DIV_SYSTEM_AY8910, 64, 0, "chipType=3")
+    }
+  );
+  ENTRY(
+    "Yamaha YM2149(F)", {
+      CH(DIV_SYSTEM_AY8910, 64, 0, "chipType=1")
+    }
+  );
+  ENTRY(
+    "Philips SAA1099", {
+      CH(DIV_SYSTEM_SAA1099, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "PC Speaker", {
+      CH(DIV_SYSTEM_PCSPKR, 32, 0, "")
+    }
+  );
+  ENTRY(
+    "Pokémon Mini", {
+      CH(DIV_SYSTEM_POKEMINI, 32, 0, "")
+    }
+  );
+  ENTRY(
+    "Commodore VIC", {
+      CH(DIV_SYSTEM_VIC20, 64, 0, "clockSel=1")
+    }
+  );
+  ENTRY(
+    "OKI MSM5232", {
+      CH(DIV_SYSTEM_MSM5232, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Pong", {
+      CH(DIV_SYSTEM_PONG, 64, 0, "")
+    }
+  );
+  CATEGORY_END;
+
+  CATEGORY_BEGIN("Sample","chips/systems which use PCM or ADPCM samples for sound synthesis.");
+  ENTRY(
+    "Amiga", {
+      CH(DIV_SYSTEM_AMIGA, 64, 0, "clockSel=1")
+    },
+    "tickRate=50"
+  );
+  ENTRY(
+    "SegaPCM", {
+      CH(DIV_SYSTEM_SEGAPCM, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Capcom QSound", {
+      CH(DIV_SYSTEM_QSOUND, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Seta/Allumer X1-010", {
+      CH(DIV_SYSTEM_X1_010, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Yamaha YMZ280B (PCMD8)", {
+      CH(DIV_SYSTEM_YMZ280B, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Ricoh RF5C68", {
+      CH(DIV_SYSTEM_RF5C68, 64, 0, "")
+    }
+  ); 
+  ENTRY(
+    "OKI MSM6258", {
+      CH(DIV_SYSTEM_MSM6258, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "OKI MSM6295", {
+      CH(DIV_SYSTEM_MSM6295, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "SNES", {
+      CH(DIV_SYSTEM_SNES, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Konami K007232", {
+      CH(DIV_SYSTEM_K007232, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Irem GA20", {
+      CH(DIV_SYSTEM_GA20, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Generic PCM DAC", {
+      CH(DIV_SYSTEM_PCM_DAC, 64, 0, "")
+    }
+  );
+  CATEGORY_END;
+
+  CATEGORY_BEGIN("Wavetable","chips which use user-specified waveforms to generate sound.");
+  ENTRY(
+    "PC Engine", {
+      CH(DIV_SYSTEM_PCE, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Commodore PET (pseudo-wavetable)", {
+      CH(DIV_SYSTEM_PET, 64, 0, "")
+    },
+    "tickRate=50"
+  );
+  ENTRY(
+    "Konami Bubble System WSG", {
+      CH(DIV_SYSTEM_BUBSYS_WSG, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Konami SCC", {
+      CH(DIV_SYSTEM_SCC, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Konami SCC+", {
+      CH(DIV_SYSTEM_SCC_PLUS, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Namco WSG", {
+      CH(DIV_SYSTEM_NAMCO, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Namco C15 (8-channel mono)", {
+      CH(DIV_SYSTEM_NAMCO_15XX, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Namco C30 (8-channel stereo)", {
+      CH(DIV_SYSTEM_NAMCO_CUS30, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Namco 163", {
+      CH(DIV_SYSTEM_N163, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Famicom Disk System (chip)", {
+      CH(DIV_SYSTEM_FDS, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "WonderSwan", {
+      CH(DIV_SYSTEM_SWAN, 64, 0, "")
+    },
+    "tickRate=75.47169811320754716981"
+  );
+  ENTRY(
+    "Virtual Boy", {
+      CH(DIV_SYSTEM_VBOY, 64, 0, "")
+    },
+    "tickRate=50.2734877734878"
+  );
+  ENTRY(
+    "Seta/Allumer X1-010", {
+      CH(DIV_SYSTEM_X1_010, 64, 0, "")
+    }
+  );
+  CATEGORY_END;
+
+  CATEGORY_BEGIN("Specialized","chips/systems with unique sound synthesis methods.");
+  ENTRY(
+    "MOS Technology SID (6581)", {
+      CH(DIV_SYSTEM_C64_6581, 64, 0, "clockSel=1")
+    },
+    "tickRate=50.1245421"
+  );
+  ENTRY(
+    "MOS Technology SID (8580)", {
+      CH(DIV_SYSTEM_C64_8580, 64, 0, "clockSel=1")
+    },
+    "tickRate=50.1245421"
+  );
+  ENTRY(
+    "Microchip AY8930", {
+      CH(DIV_SYSTEM_AY8930, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Game Boy", {
+      CH(DIV_SYSTEM_GB, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Atari Lynx", {
+      CH(DIV_SYSTEM_LYNX, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "POKEY", {
+      CH(DIV_SYSTEM_POKEY, 64, 0, "clockSel=1")
+    },
+    "tickRate=50"
+  );
+  ENTRY(
+    "Atari TIA", {
+      CH(DIV_SYSTEM_TIA, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "NES (Ricoh 2A03)", {
+      CH(DIV_SYSTEM_NES, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "Commander X16 (VERA only)", {
+      CH(DIV_SYSTEM_VERA, 64, 0, "")
+    }
+  );
+  ENTRY(
+    "ZX Spectrum (beeper only)", {
+      CH(DIV_SYSTEM_SFX_BEEPER, 64, 0, "")
+    }
+  );
+  if (settings.hiddenSystems) {
+    ENTRY(
+      "Dummy System", {
+        CH(DIV_SYSTEM_DUMMY, 64, 0, "")
+      }
+    );
+  }
+  ENTRY(
+    "tildearrow Sound Unit", {
+      CH(DIV_SYSTEM_SOUND_UNIT, 64, 0, "")
+    }
+  );
+  CATEGORY_END;
+
   CATEGORY_BEGIN("DefleMask-compatible","these configurations are compatible with DefleMask.\nselect this if you need to save as .dmf or work with that program.");
   ENTRY(
     "Sega Genesis", {
@@ -2514,9 +2650,9 @@ void FurnaceGUI::initSystemPresets() {
 FurnaceGUISysDef::FurnaceGUISysDef(const char* n, std::initializer_list<FurnaceGUISysDefChip> def, const char* e):
   name(n),
   extra(e) {
-  std::vector<FurnaceGUISysDefChip> uncompiled=def;
+  orig=def;
   int index=0;
-  for (FurnaceGUISysDefChip& i: uncompiled) {
+  for (FurnaceGUISysDefChip& i: orig) {
     definition+=fmt::sprintf(
       "id%d=%d\nvol%d=%d\npan%d=%d\nflags%d=%s\n",
       index,

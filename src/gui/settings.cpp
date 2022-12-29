@@ -40,8 +40,9 @@
 #define POWER_SAVE_DEFAULT 0
 #endif
 
-#if defined(__HAIKU__) || defined(IS_MOBILE)
+#if defined(__HAIKU__) || defined(IS_MOBILE) || (defined(_WIN32) && !defined(_WIN64))
 // NFD doesn't support Haiku
+// NFD doesn't support Windows XP either
 #define SYS_FILE_DIALOG_DEFAULT 0
 #else
 #define SYS_FILE_DIALOG_DEFAULT 1
@@ -100,6 +101,16 @@ const char* nesCores[]={
 const char* c64Cores[]={
   "reSID",
   "reSIDfp"
+};
+
+const char* pokeyCores[]={
+  "Atari800 (mzpokeysnd)",
+  "ASAP (C++ port)"
+};
+
+const char* opnCores[]={
+  "ymfm only",
+  "Nuked-OPN2 (FM) + ymfm (SSG/ADPCM)"
 };
 
 const char* pcspkrOutMethods[]={
@@ -1068,6 +1079,14 @@ void FurnaceGUI::drawSettings() {
           ImGui::Text("SID core");
           ImGui::SameLine();
           ImGui::Combo("##C64Core",&settings.c64Core,c64Cores,2);
+
+          ImGui::Text("POKEY core");
+          ImGui::SameLine();
+          ImGui::Combo("##POKEYCore",&settings.pokeyCore,pokeyCores,2);
+
+          ImGui::Text("OPN/OPNA/OPNB cores");
+          ImGui::SameLine();
+          ImGui::Combo("##OPNCore",&settings.opnCore,opnCores,2);
 
           ImGui::Separator();
 
@@ -2336,6 +2355,8 @@ void FurnaceGUI::syncSettings() {
   settings.nesCore=e->getConfInt("nesCore",0);
   settings.fdsCore=e->getConfInt("fdsCore",0);
   settings.c64Core=e->getConfInt("c64Core",1);
+  settings.pokeyCore=e->getConfInt("pokeyCore",1);
+  settings.opnCore=e->getConfInt("opnCore",1);
   settings.pcSpeakerOutMethod=e->getConfInt("pcSpeakerOutMethod",0);
   settings.yrw801Path=e->getConfString("yrw801Path","");
   settings.tg100Path=e->getConfString("tg100Path","");
@@ -2461,6 +2482,8 @@ void FurnaceGUI::syncSettings() {
   clampSetting(settings.nesCore,0,1);
   clampSetting(settings.fdsCore,0,1);
   clampSetting(settings.c64Core,0,1);
+  clampSetting(settings.pokeyCore,0,1);
+  clampSetting(settings.opnCore,0,1);
   clampSetting(settings.pcSpeakerOutMethod,0,4);
   clampSetting(settings.mainFont,0,6);
   clampSetting(settings.patFont,0,6);
@@ -2604,7 +2627,9 @@ void FurnaceGUI::commitSettings() {
     settings.snCore!=e->getConfInt("snCore",0) ||
     settings.nesCore!=e->getConfInt("nesCore",0) ||
     settings.fdsCore!=e->getConfInt("fdsCore",0) ||
-    settings.c64Core!=e->getConfInt("c64Core",1)
+    settings.c64Core!=e->getConfInt("c64Core",1) ||
+    settings.pokeyCore!=e->getConfInt("pokeyCore",1) ||
+    settings.opnCore!=e->getConfInt("opnCore",1)
   );
 
   e->setConf("mainFontSize",settings.mainFontSize);
@@ -2624,6 +2649,8 @@ void FurnaceGUI::commitSettings() {
   e->setConf("nesCore",settings.nesCore);
   e->setConf("fdsCore",settings.fdsCore);
   e->setConf("c64Core",settings.c64Core);
+  e->setConf("pokeyCore",settings.pokeyCore);
+  e->setConf("opnCore",settings.opnCore);
   e->setConf("pcSpeakerOutMethod",settings.pcSpeakerOutMethod);
   e->setConf("yrw801Path",settings.yrw801Path);
   e->setConf("tg100Path",settings.tg100Path);

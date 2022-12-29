@@ -65,6 +65,14 @@ const char** DivPlatformPOKEY::getRegisterSheet() {
 }
 
 void DivPlatformPOKEY::acquire(short* bufL, short* bufR, size_t start, size_t len) {
+  if (useAltASAP) {
+    acquireASAP(bufL, start, len);
+  } else {
+    acquireMZ(bufL, start, len);
+  }
+}
+
+void DivPlatformPOKEY::acquireMZ(short* buf, size_t start, size_t len) {
   for (size_t h=start; h<start+len; h++) {
     while (!writes.empty()) {
       QueuedWrite w=writes.front();
@@ -73,7 +81,7 @@ void DivPlatformPOKEY::acquire(short* bufL, short* bufR, size_t start, size_t le
       writes.pop();
     }
 
-    mzpokeysnd_process_16(&pokey,&bufL[h],1);
+    mzpokeysnd_process_16(&pokey,&buf[h],1);
 
     if (++oscBufDelay>=14) {
       oscBufDelay=0;
@@ -81,6 +89,23 @@ void DivPlatformPOKEY::acquire(short* bufL, short* bufR, size_t start, size_t le
       oscBuf[1]->data[oscBuf[1]->needle++]=pokey.outvol_1<<11;
       oscBuf[2]->data[oscBuf[2]->needle++]=pokey.outvol_2<<11;
       oscBuf[3]->data[oscBuf[3]->needle++]=pokey.outvol_3<<11;
+    }
+  }
+}
+
+void DivPlatformPOKEY::acquireASAP(short* buf, size_t start, size_t len) {
+  while (!writes.empty()) {
+    QueuedWrite w=writes.front();
+    altASAP.write(w.addr, w.val);
+    writes.pop();
+  }
+
+  for (size_t h=start; h<start+len; h++) {
+    if (++oscBufDelay>=2) {
+      oscBufDelay=0;
+      buf[h]=altASAP.sampleAudio(oscBuf);
+    } else {
+      buf[h]=altASAP.sampleAudio();
     }
   }
 }
@@ -440,6 +465,7 @@ void DivPlatformPOKEY::forceIns() {
     chan[i].ctlChanged=true;
     chan[i].freqChanged=true;
   }
+  audctlChanged=true;
 }
 
 void* DivPlatformPOKEY::getChanState(int ch) {
@@ -455,7 +481,11 @@ DivDispatchOscBuffer* DivPlatformPOKEY::getOscBuffer(int ch) {
 }
 
 unsigned char* DivPlatformPOKEY::getRegisterPool() {
-  return regPool;
+  if (useAltASAP) {
+    return const_cast<unsigned char*>(altASAP.getRegisterPool());
+  } else {
+    return regPool;
+  }
 }
 
 int DivPlatformPOKEY::getRegisterPoolSize() {
@@ -473,7 +503,11 @@ void DivPlatformPOKEY::reset() {
     addWrite(0xffffffff,0);
   }
 
-  ResetPokeyState(&pokey);
+  if (useAltASAP) {
+    altASAP.reset();
+  } else {
+    ResetPokeyState(&pokey);
+  }
 
   audctl=0;
   audctlChanged=true;
@@ -500,9 +534,19 @@ void DivPlatformPOKEY::setFlags(const DivConfig& flags) {
     chipClock=COLOR_NTSC/2.0;
   }
   CHECK_CUSTOM_CLOCK;
-  rate=chipClock;
-  for (int i=0; i<4; i++) {
-    oscBuf[i]->rate=rate/14;
+
+  if (useAltASAP) {
+    rate=chipClock/7;
+    for (int i=0; i<4; i++) {
+      oscBuf[i]->rate=rate/2;
+    }
+    altASAP.init(chipClock,rate);
+    altASAP.reset();
+  } else {
+    rate=chipClock;
+    for (int i=0; i<4; i++) {
+      oscBuf[i]->rate=rate/14;
+    }
   }
 }
 
@@ -524,8 +568,10 @@ int DivPlatformPOKEY::init(DivEngine* p, int channels, int sugRate, const DivCon
     oscBuf[i]=new DivDispatchOscBuffer;
   }
 
-  MZPOKEYSND_Init(&pokey);
-  
+  if (!useAltASAP) {
+    MZPOKEYSND_Init(&pokey);
+  }
+
   setFlags(flags);
   reset();
   return 6;
@@ -535,6 +581,10 @@ void DivPlatformPOKEY::quit() {
   for (int i=0; i<4; i++) {
     delete oscBuf[i];
   }
+}
+
+void DivPlatformPOKEY::setAltASAP(bool value) {
+  useAltASAP=value;
 }
 
 DivPlatformPOKEY::~DivPlatformPOKEY() {

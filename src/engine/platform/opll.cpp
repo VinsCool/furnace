@@ -248,6 +248,7 @@ void DivPlatformOPLL::tick(bool sysTick) {
       if (chan[i].freq<0) chan[i].freq=0;
       if (chan[i].freq>65535) chan[i].freq=65535;
       int freqt=toFreq(chan[i].freq);
+      if (freqt>4095) freqt=4095;
       chan[i].freqL=freqt&0xff;
       if (i>=6 && properDrums && (i<9 || !noTopHatFreq)) {
         immWrite(0x10+drumSlot[i],freqt&0xff);
@@ -257,7 +258,7 @@ void DivPlatformOPLL::tick(bool sysTick) {
           immWrite(0x10+i,freqt&0xff);
         }
       }
-      chan[i].freqH=freqt>>8;
+      chan[i].freqH=(freqt>>8)&15;
     }
     if (chan[i].keyOn && i>=6 && properDrums) {
       if (!isMuted[i]) {
@@ -455,12 +456,14 @@ int DivPlatformOPLL::dispatch(DivCommand c) {
       if (c.chan>=9 && !properDrums) return 0;
       chan[c.chan].keyOff=true;
       chan[c.chan].keyOn=false;
+      chan[c.chan].freqChanged=true;
       chan[c.chan].active=false;
       break;
     case DIV_CMD_NOTE_OFF_ENV:
       if (c.chan>=9 && !properDrums) return 0;
       chan[c.chan].keyOff=true;
       chan[c.chan].keyOn=false;
+      chan[c.chan].freqChanged=true;
       chan[c.chan].active=false;
       chan[c.chan].std.release();
       break;
