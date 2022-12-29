@@ -155,31 +155,32 @@ void DivPlatformPOKEY::tick(bool sysTick) {
   }
 
   for (int i=0; i<4; i++) {
+    // variables for pitch calculation, divisors must never be 0!
+    double divisor = 1;
+    int coarse_divisor = 1;
+    int cycle = 1;
+
+    // register variables
+    bool CLOCK_15 = audctl & 0x01;
+    //bool HPF_CH24 = audctl & 0x02;
+    //bool HPF_CH13 = audctl & 0x04;
+    bool JOIN_34 = audctl & 0x08;
+    bool JOIN_12 = audctl & 0x10;
+    bool CH3_179 = audctl & 0x20;
+    bool CH1_179 = audctl & 0x40;
+    //bool POLY9 = audctl & 0x80;
+
+    // combined modes for some special output... 
+    bool JOIN_16BIT = (((JOIN_12 && CH1_179) && i == 1) || ((JOIN_34 && CH3_179) && i == 3)) ? 1 : 0;
+    if (((JOIN_12 && CH1_179) && i == 0) || ((JOIN_34 && CH3_179) && i == 2)) continue;	// Override in 16-bit mode
+    bool CLOCK_179 = ((CH1_179 && i == 0) || (CH3_179 && i == 2)) ? 1 : 0;
+    if (JOIN_16BIT || CLOCK_179) CLOCK_15 = 0;	// override, these 2 take priority over 15khz mode if they are enabled at the same time
+
+    if (JOIN_16BIT) cycle = 7;
+    else if (CLOCK_179) cycle = 4;
+    else coarse_divisor = (CLOCK_15) ? 114 : 28;
+  
     if (chan[i].freqChanged || chan[i].keyOn || chan[i].keyOff) {
-	// variables for pitch calculation, divisors must never be 0!
-	double divisor = 1;
-	int coarse_divisor = 1;
-	int cycle = 1;
-
-	// register variables
-	bool CLOCK_15 = audctl & 0x01;
-	//bool HPF_CH24 = audctl & 0x02;
-	//bool HPF_CH13 = audctl & 0x04;
-	bool JOIN_34 = audctl & 0x08;
-	bool JOIN_12 = audctl & 0x10;
-	bool CH3_179 = audctl & 0x20;
-	bool CH1_179 = audctl & 0x40;
-	//bool POLY9 = audctl & 0x80;
-
-	// combined modes for some special output... 
-	bool JOIN_16BIT = (((JOIN_12 && CH1_179) && i == 0) || ((JOIN_34 && CH3_179) && i == 2)) ? 1 : 0;
-	bool CLOCK_179 = ((CH1_179 && i == 0) || (CH3_179 && i == 2)) ? 1 : 0;
-	if (JOIN_16BIT || CLOCK_179) CLOCK_15 = 0;	// override, these 2 take priority over 15khz mode if they are enabled at the same time
-
-	if (JOIN_16BIT) cycle = 7;
-	else if (CLOCK_179) cycle = 4;
-	else coarse_divisor = (CLOCK_15) ? 114 : 28;
-	
 	// use the modulo flags to make sure the correct timbre will be output
 	switch (chan[i].wave) 
 	{
@@ -195,6 +196,10 @@ void DivPlatformPOKEY::tick(bool sysTick) {
 		break;
 	case 7:
 		divisor = 7.5;	// Gritty tones, neither MOD3 or MOD5
+		if (CLOCK_15) {
+			divisor = 2.5;	// Buzzy tones are always output in 15khz mode with Distortion C
+			chan[i].wave = 6;	// I really don't wanna do it that way but Furnace is forcing my hand...
+		}
 		break;
 	default:
 		//Distortion A is assumed if no valid parameter is supplied 
@@ -206,27 +211,36 @@ void DivPlatformPOKEY::tick(bool sysTick) {
       // insert whatever delta method that could be suitable here... 
       bool MOD3 = ((chan[i].freq + cycle) % 3 == 0);
       bool MOD5 = ((chan[i].freq + cycle) % 5 == 0);
-      bool MOD7 = ((chan[i].freq + cycle) % 7 == 0);
-      bool MOD15 = ((chan[i].freq + cycle) % 15 == 0);
+      //bool MOD7 = ((chan[i].freq + cycle) % 7 == 0);
+      //bool MOD15 = ((chan[i].freq + cycle) % 15 == 0);
       bool MOD31 = ((chan[i].freq + cycle) % 31 == 0);
-      bool MOD73 = ((chan[i].freq + cycle) % 73 == 0);
+      //bool MOD73 = ((chan[i].freq + cycle) % 73 == 0);
  
-      // adjustments by modulo
+      // Adjustments by modulo
       // TODO: find a way to get the target pitch (in Hz) to process this part...
       switch (chan[i].wave)
       {
       	case 1:
       	case 3:
-      		//if (MOD31) chan[i].freq = deltaFreq(pitch, chan[i].freq, chipClock, coarse_divisor, divisor, cycle, chan[i].wave);
+      		if (MOD31) chan[i].freq = deltaFreq(0, chan[i].freq, chipClock, coarse_divisor, divisor, cycle, chan[i].wave);
       		break;
       	case 2:
-      		//if (!(MOD3 || CLOCK_15) || MOD5) chan[i].freq = deltaFreq(pitch, chan[i].freq, chipClock, coarse_divisor, divisor, cycle, chan[i].wave);
-      		break;
-      	case 7:
-      		//if (MOD3 || MOD5) chan[i].freq = deltaFreq(pitch, chan[i].freq, chipClock, coarse_divisor, divisor, cycle, chan[i].wave);
+      		if (!(MOD3 || CLOCK_15) || MOD5) chan[i].freq = deltaFreq(0, chan[i].freq, chipClock, coarse_divisor, divisor, cycle, chan[i].wave);
       		break;
       	case 6:
-      		//if (!(MOD3 || CLOCK_15) || MOD5) chan[i].freq = deltaFreq(pitch, chan[i].freq, chipClock, coarse_divisor, divisor, cycle, chan[i].wave);
+      		if (!(MOD3 || CLOCK_15) || MOD5) chan[i].freq = deltaFreq(0, chan[i].freq, chipClock, coarse_divisor, divisor, cycle, chan[i].wave);
+      		if (!JOIN_16BIT && !CLOCK_15 && chan[i].freq > 0xFF) {
+      			divisor = 7.5;		// Hack: force Gritty tones for lower notes
+      			chan[i].wave = 7;	// I really don't wanna do it that way but Furnace is forcing my hand...
+      			chan[i].freq=parent->calcFreq(chan[i].baseFreq,chan[i].pitch,chan[i].fixedArp?chan[i].baseNoteOverride:chan[i].arpOff,chan[i].fixedArp,true,0,chan[i].pitch2,chipClock,(coarse_divisor*divisor))-cycle;
+      			MOD3 = ((chan[i].freq + cycle) % 3 == 0);
+     			MOD5 = ((chan[i].freq + cycle) % 5 == 0);
+      			goto Dist_E;		// Teehee
+      		}
+      		break;
+      	case 7:
+      	Dist_E:
+      		if (MOD3 || MOD5) chan[i].freq = deltaFreq(0, chan[i].freq, chipClock, coarse_divisor, divisor, cycle, chan[i].wave);
       		break;
       }
 
@@ -235,13 +249,11 @@ void DivPlatformPOKEY::tick(bool sysTick) {
       if (JOIN_16BIT && chan[i].freq > 0xFFFF) chan[i].freq = 0xFFFF;
       
       // write frequency
-      if ((i==1 && audctl&16) || (i==3 && audctl&8)) {
-        // ignore - channel is paired
+      if (JOIN_16BIT) {
+      	rWrite(i<<1,chan[i].freq>>8);		// 16-bit MSB
+      	rWrite((i-1)<<1,chan[i].freq&0xff);	// 16-bit LSB
       } else {
-        rWrite(i<<1,chan[i].freq&0xff);
-        if ((i==0 && audctl&16) || (i==2 && audctl&8)) {
-          rWrite((1+i)<<1,chan[i].freq>>8);
-        }
+      	rWrite(i<<1,chan[i].freq&0xff);		// 8-Bit, same to 16-bit LSB
       }
 
       if (chan[i].keyOff) {
@@ -254,14 +266,13 @@ void DivPlatformPOKEY::tick(bool sysTick) {
     if (chan[i].ctlChanged) {
       unsigned char val=((chan[i].active && !isMuted[i])?(chan[i].outVol&15):0)|(waveMap[chan[i].wave&7]<<5);
       chan[i].ctlChanged=false;
-      if ((i==1 && audctl&16) || (i==3 && audctl&8)) {
-        // ignore - channel is paired
-      } else if ((i==0 && audctl&16) || (i==0 && audctl&8)) {
-        rWrite(1+(i<<1),0);
-        rWrite(3+(i<<1),val);
+
+      // write waveform/volume
+      if (JOIN_16BIT) {
+      	rWrite(1+(i<<1),val);		// 16-bit MSB
+      	rWrite(1+((i-1)<<1),0);		// 16-bit LSB
       } else {
-        
-        rWrite(1+(i<<1),val);
+      	rWrite(1+(i<<1),val);		// 8-Bit, same to 16-bit LSB
       }
     }
   }
@@ -327,6 +338,13 @@ void DivPlatformPOKEY::tick(bool sysTick) {
                     break;
             }
 
+/*
+
+// Problem: Furnace cannot provide absolute pitch for comparison purposes... 
+// The best compromise is using the nearest Freq integer, at the cost of being out of tune half of the time.
+// 2 units of Freq could be worse tuned up or down, while the generated pitch may be very different between 2 valid pitches!
+// So... that's better than nothing at all, I suppose, heh. *shrugs*
+
             // First delta, up
             double tmp_pitch_up = pitch - (((clock / (coarse_divisor * divisor)) / (freq + cycle)) / 2);
 
@@ -336,6 +354,11 @@ void DivPlatformPOKEY::tick(bool sysTick) {
             // Compare the 2 values with a subtraction, and return whichever is nearest to the wanted pitch
             if (tmp_pitch_down - tmp_pitch_up > 0) return tmp_freq_up;
             return tmp_freq_down;
+*/           
+
+            if (tmp_freq_down - tmp_freq_up > 0) return tmp_freq_up;
+            return tmp_freq_down;
+
         }
 
 int DivPlatformPOKEY::dispatch(DivCommand c) {
