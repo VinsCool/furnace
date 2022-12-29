@@ -356,7 +356,7 @@ void DivPlatformPOKEY::tick(bool sysTick) {
             return tmp_freq_down;
 */           
 
-            if (tmp_freq_down - tmp_freq_up > 0) return tmp_freq_up;
+            if (freq - tmp_freq_down >= tmp_freq_up - freq) return tmp_freq_up;
             return tmp_freq_down;
 
         }
