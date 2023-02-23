@@ -1,6 +1,6 @@
 /**
  * Furnace Tracker - multi-system chiptune tracker
- * Copyright (C) 2021-2022 tildearrow and contributors
+ * Copyright (C) 2021-2023 tildearrow and contributors
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,12 +39,12 @@ const char** DivPlatformBubSysWSG::getRegisterSheet() {
   return regCheatSheetBubSysWSG;
 }
 
-void DivPlatformBubSysWSG::acquire(short* bufL, short* bufR, size_t start, size_t len) {
+void DivPlatformBubSysWSG::acquire(short** buf, size_t len) {
   int chanOut=0;
-  for (size_t h=start; h<start+len; h++) {
+  for (size_t h=0; h<len; h++) {
     signed int out=0;
     // K005289 part
-    k005289.tick();
+    k005289.tick(8);
 
     // Wavetable part
     for (int i=0; i<2; i++) {
@@ -60,7 +60,7 @@ void DivPlatformBubSysWSG::acquire(short* bufL, short* bufR, size_t start, size_
       }
     }
 
-    if (++writeOscBuf>=64) writeOscBuf=0;
+    if (++writeOscBuf>=8) writeOscBuf=0;
 
     out<<=6; // scale output to 16 bit
 
@@ -68,7 +68,7 @@ void DivPlatformBubSysWSG::acquire(short* bufL, short* bufR, size_t start, size_
     if (out>32767) out=32767;
 
     //printf("out: %d\n",out);
-    bufL[h]=bufR[h]=out;
+    buf[0][h]=out;
   }
 }
 
@@ -306,8 +306,8 @@ void DivPlatformBubSysWSG::reset() {
   k005289.reset();
 }
 
-bool DivPlatformBubSysWSG::isStereo() {
-  return false;
+int DivPlatformBubSysWSG::getOutputCount() {
+  return 1;
 }
 
 bool DivPlatformBubSysWSG::keyOffAffectsArp(int ch) {
@@ -332,9 +332,9 @@ void DivPlatformBubSysWSG::notifyInsDeletion(void* ins) {
 void DivPlatformBubSysWSG::setFlags(const DivConfig& flags) {
   chipClock=COLOR_NTSC;
   CHECK_CUSTOM_CLOCK;
-  rate=chipClock;
+  rate=chipClock/8;
   for (int i=0; i<2; i++) {
-    oscBuf[i]->rate=rate/64;
+    oscBuf[i]->rate=rate/8;
   }
 }
 

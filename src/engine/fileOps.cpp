@@ -1,6 +1,6 @@
 /**
  * Furnace Tracker - multi-system chiptune tracker
- * Copyright (C) 2021-2022 tildearrow and contributors
+ * Copyright (C) 2021-2023 tildearrow and contributors
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -83,7 +83,7 @@ bool DivEngine::loadDMF(unsigned char* file, size_t len) {
     }
     ds.version=(unsigned char)reader.readC();
     logI("module version %d (0x%.2x)",ds.version,ds.version);
-    if (ds.version>0x1a) {
+    if (ds.version>0x1b) {
       logE("this version is not supported by Furnace yet!");
       lastError="this version is not supported by Furnace yet";
       delete[] file;
@@ -219,14 +219,15 @@ bool DivEngine::loadDMF(unsigned char* file, size_t len) {
     }
 
     ds.subsong[0]->timeBase=reader.readC();
-    ds.subsong[0]->speed1=reader.readC();
+    ds.subsong[0]->speeds.len=2;
+    ds.subsong[0]->speeds.val[0]=reader.readC();
     if (ds.version>0x07) {
-      ds.subsong[0]->speed2=reader.readC();
+      ds.subsong[0]->speeds.val[1]=reader.readC();
       ds.subsong[0]->pal=reader.readC();
       ds.subsong[0]->hz=(ds.subsong[0]->pal)?60:50;
       ds.subsong[0]->customTempo=reader.readC();
     } else {
-      ds.subsong[0]->speed2=ds.subsong[0]->speed1;
+      ds.subsong[0]->speeds.len=1;
     }
     if (ds.version>0x0a) {
       String hz=reader.readString(3);
@@ -827,6 +828,8 @@ bool DivEngine::loadDMF(unsigned char* file, size_t len) {
     for (int i=0; i<ds.sampleLen; i++) {
       DivSample* sample=new DivSample;
       int length=reader.readI();
+      int cutStart=0;
+      int cutEnd=length;
       int pitch=5;
       int vol=50;
       short* data;
@@ -866,6 +869,29 @@ bool DivEngine::loadDMF(unsigned char* file, size_t len) {
           sample->depth=DIV_SAMPLE_DEPTH_YMZ_ADPCM;
         }
       }
+      if (ds.version>=0x1b) {
+        // what the hell man...
+        cutStart=reader.readI();
+        cutEnd=reader.readI();
+        if (cutStart<0 || cutStart>length) {
+          logE("cutStart is out of range! (%d)",cutStart);
+          lastError="file is corrupt or unreadable at samples";
+          delete[] file;
+          return false;
+        }
+        if (cutEnd<0 || cutEnd>length) {
+          logE("cutEnd is out of range! (%d)",cutEnd);
+          lastError="file is corrupt or unreadable at samples";
+          delete[] file;
+          return false;
+        }
+        if (cutEnd<cutStart) {
+          logE("cutEnd %d is before cutStart %d. what's going on?",cutEnd,cutStart);
+          lastError="file is corrupt or unreadable at samples";
+          delete[] file;
+          return false;
+        }
+      }
       if (length>0) {
         if (ds.version>0x08) {
           if (ds.version<0x0b) {
@@ -875,6 +901,19 @@ bool DivEngine::loadDMF(unsigned char* file, size_t len) {
           } else {
             data=new short[length];
             reader.read(data,length*2);
+          }
+
+          if (ds.version>0x1b) {
+            if (cutStart!=0 || cutEnd!=length) {
+              // cut data
+              short* newData=new short[cutEnd-cutStart];
+              memcpy(newData,&data[cutStart],(cutEnd-cutStart)*sizeof(short));
+              delete[] data;
+              data=newData;
+              length=cutEnd-cutStart;
+              cutStart=0;
+              cutEnd=length;
+            }
           }
           
 #ifdef TA_BIG_ENDIAN
@@ -939,13 +978,13 @@ bool DivEngine::loadDMF(unsigned char* file, size_t len) {
       ds.systemLen=2;
       ds.system[0]=DIV_SYSTEM_YM2612;
       ds.system[1]=DIV_SYSTEM_SMS;
-      ds.systemVol[1]=32;
+      ds.systemVol[1]=0.5f;
     }
     if (ds.system[0]==DIV_SYSTEM_GENESIS_EXT) {
       ds.systemLen=2;
       ds.system[0]=DIV_SYSTEM_YM2612_EXT;
       ds.system[1]=DIV_SYSTEM_SMS;
-      ds.systemVol[1]=32;
+      ds.systemVol[1]=0.5f;
     }
     if (ds.system[0]==DIV_SYSTEM_ARCADE) {
       ds.systemLen=2;
@@ -1716,6 +1755,9 @@ bool DivEngine::loadFur(unsigned char* file, size_t len) {
     if (ds.version<130) {
       ds.oldArpStrategy=true;
     }
+    if (ds.version<138) {
+      ds.brokenPortaLegato=true;
+    }
     ds.isDMF=false;
 
     reader.readS(); // reserved
@@ -1739,8 +1781,9 @@ bool DivEngine::loadFur(unsigned char* file, size_t len) {
     reader.readI();
 
     subSong->timeBase=reader.readC();
-    subSong->speed1=reader.readC();
-    subSong->speed2=reader.readC();
+    subSong->speeds.len=2;
+    subSong->speeds.val[0]=reader.readC();
+    subSong->speeds.val[1]=reader.readC();
     subSong->arpLen=reader.readC();
     subSong->hz=reader.readF();
     subSong->pal=(subSong->hz>=53);
@@ -1830,14 +1873,18 @@ bool DivEngine::loadFur(unsigned char* file, size_t len) {
 
     // system volume
     for (int i=0; i<DIV_MAX_CHIPS; i++) {
-      ds.systemVol[i]=reader.readC();
+      signed char oldSysVol=reader.readC();
+      ds.systemVol[i]=(float)oldSysVol/64.0f;
       if (ds.version<59 && ds.system[i]==DIV_SYSTEM_NES) {
         ds.systemVol[i]/=4;
       }
     }
 
     // system panning
-    for (int i=0; i<DIV_MAX_CHIPS; i++) ds.systemPan[i]=reader.readC();
+    for (int i=0; i<DIV_MAX_CHIPS; i++) {
+      signed char oldSysPan=reader.readC();
+      ds.systemPan[i]=(float)oldSysPan/127.0f;
+    }
 
     // system props
     for (int i=0; i<DIV_MAX_CHIPS; i++) {
@@ -1860,14 +1907,14 @@ bool DivEngine::loadFur(unsigned char* file, size_t len) {
           ds.system[i]=DIV_SYSTEM_YM2612;
           if (i<31) {
             ds.system[i+1]=DIV_SYSTEM_SMS;
-            ds.systemVol[i+1]=(((ds.systemVol[i]&127)*3)>>3)|(ds.systemVol[i]&128);
+            ds.systemVol[i+1]=ds.systemVol[i]*0.375f;
           }
         }
         if (ds.system[i]==DIV_SYSTEM_GENESIS_EXT) {
           ds.system[i]=DIV_SYSTEM_YM2612_EXT;
           if (i<31) {
             ds.system[i+1]=DIV_SYSTEM_SMS;
-            ds.systemVol[i+1]=(((ds.systemVol[i]&127)*3)>>3)|(ds.systemVol[i]&128);
+            ds.systemVol[i+1]=ds.systemVol[i]*0.375f;
           }
         }
         if (ds.system[i]==DIV_SYSTEM_ARCADE) {
@@ -2200,6 +2247,49 @@ bool DivEngine::loadFur(unsigned char* file, size_t len) {
       ds.autoSystem=true;
     }
 
+    // system output config
+    if (ds.version>=135) {
+      for (int i=0; i<ds.systemLen; i++) {
+        ds.systemVol[i]=reader.readF();
+        ds.systemPan[i]=reader.readF();
+        ds.systemPanFR[i]=reader.readF();
+      }
+
+      // patchbay
+      unsigned int conns=reader.readI();
+      for (unsigned int i=0; i<conns; i++) {
+        ds.patchbay.push_back((unsigned int)reader.readI());
+      }
+    }
+
+    if (ds.version>=136) song.patchbayAuto=reader.readC();
+
+    if (ds.version>=138) {
+      ds.brokenPortaLegato=reader.readC();
+      for (int i=0; i<7; i++) {
+        reader.readC();
+      }
+    }
+
+    if (ds.version>=139) {
+      subSong->speeds.len=reader.readC();
+      for (int i=0; i<16; i++) {
+        subSong->speeds.val[i]=reader.readC();
+      }
+
+      // grooves
+      unsigned char grooveCount=reader.readC();
+      for (int i=0; i<grooveCount; i++) {
+        DivGroovePattern gp;
+        gp.len=reader.readC();
+        for (int j=0; j<16; j++) {
+          gp.val[j]=reader.readC();
+        }
+
+        ds.grooves.push_back(gp);
+      }
+    }
+
     // read system flags
     if (ds.version>=119) {
       logD("reading chip flags...");
@@ -2258,8 +2348,9 @@ bool DivEngine::loadFur(unsigned char* file, size_t len) {
 
         subSong=ds.subsong[i+1];
         subSong->timeBase=reader.readC();
-        subSong->speed1=reader.readC();
-        subSong->speed2=reader.readC();
+        subSong->speeds.len=2;
+        subSong->speeds.val[0]=reader.readC();
+        subSong->speeds.val[1]=reader.readC();
         subSong->arpLen=reader.readC();
         subSong->hz=reader.readF();
         subSong->pal=(subSong->hz>=53);
@@ -2306,6 +2397,13 @@ bool DivEngine::loadFur(unsigned char* file, size_t len) {
 
         for (int i=0; i<tchans; i++) {
           subSong->chanShortName[i]=reader.readString();
+        }
+
+        if (ds.version>=139) {
+          subSong->speeds.len=reader.readC();
+          for (int i=0; i<16; i++) {
+            subSong->speeds.val[i]=reader.readC();
+          }
         }
       }
     }
@@ -2539,6 +2637,42 @@ bool DivEngine::loadFur(unsigned char* file, size_t len) {
         if (ds.system[i]==DIV_SYSTEM_SMS ||
             ds.system[i]==DIV_SYSTEM_T6W28) {
           ds.systemFlags[i].set("noEasyNoise",true);
+        }
+      }
+    }
+
+    // OPL3 pan compat
+    if (ds.version<134) {
+      for (int i=0; i<ds.systemLen; i++) {
+        if (ds.system[i]==DIV_SYSTEM_OPL3 ||
+            ds.system[i]==DIV_SYSTEM_OPL3_DRUMS) {
+          ds.systemFlags[i].set("compatPan",true);
+        }
+      }
+    }
+
+    // new YM2612/SN/X1-010 volumes
+    if (ds.version<137) {
+      for (int i=0; i<ds.systemLen; i++) {
+        switch (ds.system[i]) {
+          case DIV_SYSTEM_YM2612:
+          case DIV_SYSTEM_YM2612_EXT:
+          case DIV_SYSTEM_YM2612_DUALPCM:
+          case DIV_SYSTEM_YM2612_DUALPCM_EXT:
+          case DIV_SYSTEM_YM2612_CSM:
+            ds.systemVol[i]/=2.0;
+            break;
+          case DIV_SYSTEM_SMS:
+          case DIV_SYSTEM_T6W28:
+          case DIV_SYSTEM_OPLL:
+          case DIV_SYSTEM_OPLL_DRUMS:
+            ds.systemVol[i]/=1.5;
+            break;
+          case DIV_SYSTEM_X1_010:
+            ds.systemVol[i]/=4.0;
+            break;
+          default:
+            break;
         }
       }
     }
@@ -2889,7 +3023,6 @@ bool DivEngine::loadMod(unsigned char* file, size_t len) {
               if (fxVal>0x20 && ds.name!="klisje paa klisje") {
                 writeFxCol(0xf0,fxVal);
               } else {
-                writeFxCol(0x09,fxVal);
                 writeFxCol(0x0f,fxVal);
               }
               break;
@@ -3147,7 +3280,7 @@ bool DivEngine::loadFC(unsigned char* file, size_t len) {
 
     ds.systemLen=1;
     ds.system[0]=DIV_SYSTEM_AMIGA;
-    ds.systemVol[0]=64;
+    ds.systemVol[0]=1.0f;
     ds.systemPan[0]=0;
     ds.systemFlags[0].set("clockSel",1); // PAL
     ds.systemFlags[0].set("stereoSep",80);
@@ -3368,8 +3501,8 @@ bool DivEngine::loadFC(unsigned char* file, size_t len) {
     ds.subsong[0]->pal=true;
     ds.subsong[0]->customTempo=true;
     ds.subsong[0]->pat[3].effectCols=3;
-    ds.subsong[0]->speed1=3;
-    ds.subsong[0]->speed2=3;
+    ds.subsong[0]->speeds.val[0]=3;
+    ds.subsong[0]->speeds.len=1;
 
     int lastIns[4];
     int lastNote[4];
@@ -3386,10 +3519,8 @@ bool DivEngine::loadFC(unsigned char* file, size_t len) {
         ds.subsong[0]->orders.ord[j][i]=i;
         DivPattern* p=ds.subsong[0]->pat[j].getPattern(i,true);
         if (j==3 && seq[i].speed) {
-          p->data[0][6]=0x09;
+          p->data[0][6]=0x0f;
           p->data[0][7]=seq[i].speed;
-          p->data[0][8]=0x0f;
-          p->data[0][9]=seq[i].speed;
         }
 
         bool ignoreNext=false;
@@ -4276,8 +4407,9 @@ SafeWriter* DivEngine::saveFur(bool notPrimary) {
   w->writeI(0);
 
   w->writeC(subSong->timeBase);
-  w->writeC(subSong->speed1);
-  w->writeC(subSong->speed2);
+  // these are for compatibility
+  w->writeC(subSong->speeds.val[0]);
+  w->writeC((subSong->speeds.len>=2)?subSong->speeds.val[1]:subSong->speeds.val[0]);
   w->writeC(subSong->arpLen);
   w->writeF(subSong->hz);
   w->writeS(subSong->patLen);
@@ -4298,11 +4430,11 @@ SafeWriter* DivEngine::saveFur(bool notPrimary) {
   }
 
   for (int i=0; i<DIV_MAX_CHIPS; i++) {
-    w->writeC(song.systemVol[i]);
+    w->writeC(song.systemVol[i]*64.0f);
   }
 
   for (int i=0; i<DIV_MAX_CHIPS; i++) {
-    w->writeC(song.systemPan[i]);
+    w->writeC(song.systemPan[i]*127.0f);
   }
 
   // chip flags (we'll seek here later)
@@ -4446,6 +4578,39 @@ SafeWriter* DivEngine::saveFur(bool notPrimary) {
   w->writeString(song.systemNameJ,false);
   w->writeString(song.categoryJ,false);
 
+  // system output config
+  for (int i=0; i<song.systemLen; i++) {
+    w->writeF(song.systemVol[i]);
+    w->writeF(song.systemPan[i]);
+    w->writeF(song.systemPanFR[i]);
+  }
+  w->writeI(song.patchbay.size());
+  for (unsigned int i: song.patchbay) {
+    w->writeI(i);
+  }
+  w->writeC(song.patchbayAuto);
+
+  // even more compat flags
+  w->writeC(song.brokenPortaLegato);
+  for (int i=0; i<7; i++) {
+    w->writeC(0);
+  }
+
+  // speeds of first song
+  w->writeC(subSong->speeds.len);
+  for (int i=0; i<16; i++) {
+    w->writeC(subSong->speeds.val[i]);
+  }
+
+  // groove list
+  w->writeC((unsigned char)song.grooves.size());
+  for (const DivGroovePattern& i: song.grooves) {
+    w->writeC(i.len);
+    for (int j=0; j<16; j++) {
+      w->writeC(i.val[j]);
+    }
+  }
+
   blockEndSeek=w->tell();
   w->seek(blockStartSeek,SEEK_SET);
   w->writeI(blockEndSeek-blockStartSeek-4);
@@ -4460,8 +4625,8 @@ SafeWriter* DivEngine::saveFur(bool notPrimary) {
     w->writeI(0);
 
     w->writeC(subSong->timeBase);
-    w->writeC(subSong->speed1);
-    w->writeC(subSong->speed2);
+    w->writeC(subSong->speeds.val[0]);
+    w->writeC((subSong->speeds.len>=2)?subSong->speeds.val[1]:subSong->speeds.val[0]);
     w->writeC(subSong->arpLen);
     w->writeF(subSong->hz);
     w->writeS(subSong->patLen);
@@ -4498,6 +4663,12 @@ SafeWriter* DivEngine::saveFur(bool notPrimary) {
 
     for (int i=0; i<chans; i++) {
       w->writeString(subSong->chanShortName[i],false);
+    }
+
+    // speeds
+    w->writeC(subSong->speeds.len);
+    for (int i=0; i<16; i++) {
+      w->writeC(subSong->speeds.val[i]);
     }
 
     blockEndSeek=w->tell();
@@ -4755,8 +4926,8 @@ SafeWriter* DivEngine::saveDMF(unsigned char version) {
   w->writeC(curSubSong->hilightB);
   
   w->writeC(curSubSong->timeBase);
-  w->writeC(curSubSong->speed1);
-  w->writeC(curSubSong->speed2);
+  w->writeC(curSubSong->speeds.val[0]);
+  w->writeC((curSubSong->speeds.len>=2)?curSubSong->speeds.val[1]:curSubSong->speeds.val[0]);
   w->writeC(curSubSong->pal);
   w->writeC(curSubSong->customTempo);
   char customHz[4];
@@ -4778,6 +4949,14 @@ SafeWriter* DivEngine::saveDMF(unsigned char version) {
 
   if (song.subsong.size()>1) {
     addWarning("only the currently selected subsong will be saved");
+  }
+
+  if (!song.grooves.empty()) {
+    addWarning("grooves will not be saved");
+  }
+
+  if (curSubSong->speeds.len>2) {
+    addWarning("only the first two speeds will be effective");
   }
 
   if (curSubSong->virtualTempoD!=curSubSong->virtualTempoN) {

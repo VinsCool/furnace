@@ -1,6 +1,6 @@
 /**
  * Furnace Tracker - multi-system chiptune tracker
- * Copyright (C) 2021-2022 tildearrow and contributors
+ * Copyright (C) 2021-2023 tildearrow and contributors
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -51,7 +51,7 @@ inline void DivPlatformGA20::chWrite(unsigned char ch, unsigned int addr, unsign
   }
 }
 
-void DivPlatformGA20::acquire(short* bufL, short* bufR, size_t start, size_t len) {
+void DivPlatformGA20::acquire(short** buf, size_t len) {
   if (ga20BufLen<len) {
     ga20BufLen=len;
     for (int i=0; i<4; i++) {
@@ -60,7 +60,7 @@ void DivPlatformGA20::acquire(short* bufL, short* bufR, size_t start, size_t len
     }
   }
 
-  for (size_t h=start; h<start+len; h++) {
+  for (size_t h=0; h<len; h++) {
     if ((--delay)<=0) {
       delay=MAX(0,delay);
       if (!writes.empty()) {
@@ -73,7 +73,7 @@ void DivPlatformGA20::acquire(short* bufL, short* bufR, size_t start, size_t len
     }
     short *buffer[4] = {&ga20Buf[0][h],&ga20Buf[1][h],&ga20Buf[2][h],&ga20Buf[3][h]};
     ga20.sound_stream_update(buffer, 1);
-    bufL[h]=(signed int)(ga20Buf[0][h]+ga20Buf[1][h]+ga20Buf[2][h]+ga20Buf[3][h])>>2;
+    buf[0][h]=(signed int)(ga20Buf[0][h]+ga20Buf[1][h]+ga20Buf[2][h]+ga20Buf[3][h])>>2;
     for (int i=0; i<4; i++) {
       oscBuf[i]->data[oscBuf[i]->needle++]=ga20Buf[i][h];
     }
@@ -92,7 +92,7 @@ void DivPlatformGA20::tick(bool sysTick) {
     chan[i].std.next();
     if (chan[i].std.vol.had) {
       const signed char macroVol=VOL_SCALE_LOG((chan[i].vol&0xff),(0xff*MIN(chan[i].macroVolMul,chan[i].std.vol.val))/chan[i].macroVolMul,0xff);
-      if ((!isMuted[i]) && (macroVol!=chan[i].outVol)) {
+      if (macroVol!=chan[i].outVol) {
         chan[i].outVol=macroVol;
         chan[i].volumeChanged=true;
       }
@@ -121,7 +121,7 @@ void DivPlatformGA20::tick(bool sysTick) {
       }
     }
     if (chan[i].volumeChanged) {
-      chan[i].resVol=(chan[i].active && isMuted[i])?0:chan[i].outVol&0xff;
+      chan[i].resVol=chan[i].outVol&0xff;
       chWrite(i,0x5,chan[i].resVol);
       chan[i].volumeChanged=false;
     }
@@ -175,9 +175,7 @@ void DivPlatformGA20::tick(bool sysTick) {
         chWrite(i,6,2);
         if (!chan[i].std.vol.had) {
           chan[i].outVol=chan[i].vol;
-          if (!isMuted[i]) {
-            chan[i].volumeChanged=true;
-          }
+          chan[i].volumeChanged=true;
         }
         chan[i].keyOn=false;
       }
@@ -218,9 +216,7 @@ int DivPlatformGA20::dispatch(DivCommand c) {
       chan[c.chan].macroInit(ins);
       if (!parent->song.brokenOutVol && !chan[c.chan].std.vol.will) {
         chan[c.chan].outVol=chan[c.chan].vol;
-        if (!isMuted[c.chan]) {
-          chan[c.chan].volumeChanged=true;
-        }
+        chan[c.chan].volumeChanged=true;
       }
       break;
     }
@@ -244,9 +240,7 @@ int DivPlatformGA20::dispatch(DivCommand c) {
         chan[c.chan].vol=c.value;
         if (!chan[c.chan].std.vol.has) {
           chan[c.chan].outVol=c.value;
-          if (!isMuted[c.chan]) {
-            chan[c.chan].volumeChanged=true;
-          }
+          chan[c.chan].volumeChanged=true;
         }
       }
       break;
@@ -320,6 +314,7 @@ int DivPlatformGA20::dispatch(DivCommand c) {
 
 void DivPlatformGA20::muteChannel(int ch, bool mute) {
   isMuted[ch]=mute;
+  ga20.set_mute(ch,mute);
   chan[ch].volumeChanged=true;
 }
 
@@ -358,11 +353,12 @@ void DivPlatformGA20::reset() {
     // keyoff all channels
     chWrite(i,5,0);
     chWrite(i,6,0);
+    if (isMuted[i]) ga20.set_mute(i,true);
   }
 }
 
-bool DivPlatformGA20::isStereo() {
-  return false;
+int DivPlatformGA20::getOutputCount() {
+  return 1;
 }
 
 void DivPlatformGA20::notifyInsChange(int ins) {

@@ -210,9 +210,11 @@ Available options:
 | `SYSTEM_RTMIDI` | `OFF` | Use a system-installed version of RtMidi instead of the vendored one |
 | `SYSTEM_ZLIB` | `OFF` | Use a system-installed version of zlib instead of the vendored one |
 | `SYSTEM_SDL2` | `OFF` | Use a system-installed version of SDL2 instead of the vendored one |
+| `SUPPORT_XP` | `OFF` | Build a Windows XP-compatible binary |
 | `WARNINGS_ARE_ERRORS` | `OFF` (but consider enabling this & reporting any errors that arise from it!) | Whether warnings in furnace's C++ code should be treated as errors |
 | `WITH_DEMOS` | `ON` | Install demo songs on `make install` |
 | `WITH_INSTRUMENTS` | `ON` | Install demo instruments on `make install` |
+| `WITH_WAVETABLES` | `ON` | Install wavetables on `make install` |
 
 ## console usage
 
@@ -281,17 +283,13 @@ two possibilities:
 - the recommended way is by creating the "Sample" type instrument and assigning a sample to it.
 - otherwise you may employ the DefleMask-compatible method, using `17xx` effect.
 
-> my .dmf song sounds very odd at a certain point
+> my .dmf song sounds odd at a certain point
 
-file a bug report. use the Issues page. it's probably another playback inaccuracy.
-
-> my .dmf song sounds correct, but it doesn't in DefleMask
-
-file a bug report **here**. it still is a playback inaccuracy.
+Furnace's .dmf compatibility isn't perfect and it's mostly because DefleMask does things different.
 
 > my song sounds terrible after saving as .dmf!
 
-the DefleMask format has several limitations. save in Furnace song format instead (.fur).
+you should only save as .dmf if you're really sure, because the DefleMask format has several limitations. save in Furnace song format instead (.fur).
 
 > how do I solo channels?
 
@@ -300,7 +298,7 @@ right click on the channel name.
 ---
 # footnotes
 
-copyright (C) 2021-2022 tildearrow and contributors.
+copyright (C) 2021-2023 tildearrow and contributors.
 
 This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
 
@@ -309,4 +307,4 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-despite the fact this program works with the .dmf file format, it is NOT affiliated with Delek or DefleMask in any way, nor it is a replacement for the original program.
+despite the fact this program works with the .dmf, .dmp and .dmw file formats (besides its native .fur format), it is NOT affiliated with Delek or DefleMask in any way, nor it is a replacement for the original program.
