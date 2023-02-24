@@ -37,25 +37,7 @@ const char* regCheatSheetPOKEY[]={
   "AUDCTL", "8",
   NULL
 };
-/*
-// LLsLSsLLsSLsLLn
-const unsigned char snapPeriodLong[15]={
-  0, 1, 1, 3, 3, 6, 6, 7, 7, 10, 10, 12, 12, 13, 13
-};
 
-const unsigned char snapPeriodShort[15]={
-  2, 2, 2, 2, 5, 5, 5, 8, 8, 11, 11, 11, 11, 17, 17
-};
-
-// LsSLsLLnLLsLSsL
-const unsigned char snapPeriodLong16[15]={
-  0, 0, 3, 3, 3, 5, 6, 6, 8, 9, 9, 11, 11, 14, 14
-};
-
-const unsigned char snapPeriodShort16[15]={
-  1, 1, 1, 4, 4, 4, 4, 4, 10, 10, 10, 10, 13, 13, 13
-};
-*/
 const unsigned char waveMap[8]={
   0, 1, 2, 3, 4, 5, 6, 6
 };
@@ -222,13 +204,13 @@ void DivPlatformPOKEY::tick(bool sysTick) {
       {
       	case 1:
       	case 3:
-      		if (MOD31) chan[i].freq = deltaFreq(0, chan[i].freq, chipClock, coarse_divisor, divisor, cycle, chan[i].wave);
+      		if (MOD31) chan[i].freq = deltaFreq(chan[i].truePitch, chan[i].freq, chipClock, coarse_divisor, divisor, cycle, chan[i].wave);
       		break;
       	case 2:
-      		if (!(MOD3 || CLOCK_15) || MOD5) chan[i].freq = deltaFreq(0, chan[i].freq, chipClock, coarse_divisor, divisor, cycle, chan[i].wave);
+      		if (!(MOD3 || CLOCK_15) || MOD5) chan[i].freq = deltaFreq(chan[i].truePitch, chan[i].freq, chipClock, coarse_divisor, divisor, cycle, chan[i].wave);
       		break;
       	case 6:
-      		if (!(MOD3 || CLOCK_15) || MOD5) chan[i].freq = deltaFreq(0, chan[i].freq, chipClock, coarse_divisor, divisor, cycle, chan[i].wave);
+      		if (!(MOD3 || CLOCK_15) || MOD5) chan[i].freq = deltaFreq(chan[i].truePitch, chan[i].freq, chipClock, coarse_divisor, divisor, cycle, chan[i].wave);
       		if (!JOIN_16BIT && !CLOCK_15 && chan[i].freq > 0xFF) {
       			divisor = 7.5;		// Hack: force Gritty tones for lower notes
       			chan[i].wave = 7;	// I really don't wanna do it that way but Furnace is forcing my hand...
@@ -240,7 +222,7 @@ void DivPlatformPOKEY::tick(bool sysTick) {
       		break;
       	case 7:
       	Dist_E:
-      		if (MOD3 || MOD5) chan[i].freq = deltaFreq(0, chan[i].freq, chipClock, coarse_divisor, divisor, cycle, chan[i].wave);
+      		if (MOD3 || MOD5) chan[i].freq = deltaFreq(chan[i].truePitch, chan[i].freq, chipClock, coarse_divisor, divisor, cycle, chan[i].wave);
       		break;
       }
 
@@ -338,28 +320,31 @@ void DivPlatformPOKEY::tick(bool sysTick) {
                     break;
             }
 
-/*
-
-// Problem: Furnace cannot provide absolute pitch for comparison purposes... 
-// The best compromise is using the nearest Freq integer, at the cost of being out of tune half of the time.
-// 2 units of Freq could be worse tuned up or down, while the generated pitch may be very different between 2 valid pitches!
-// So... that's better than nothing at all, I suppose, heh. *shrugs*
-
             // First delta, up
-            double tmp_pitch_up = pitch - (((clock / (coarse_divisor * divisor)) / (freq + cycle)) / 2);
+            double tmp_pitch_up = pitch - getPitch(tmp_freq_up, coarse_divisor, divisor, cycle);
 
             // Second delta, down
-            double tmp_pitch_down = (((clock / (coarse_divisor * divisor)) / (freq + cycle)) / 2) - pitch;
+            double tmp_pitch_down = getPitch(tmp_freq_down, coarse_divisor, divisor, cycle) - pitch;
 
-            // Compare the 2 values with a subtraction, and return whichever is nearest to the wanted pitch
-            if (tmp_pitch_down - tmp_pitch_up > 0) return tmp_freq_up;
-            return tmp_freq_down;
-*/           
-
-            if (freq - tmp_freq_down >= tmp_freq_up - freq) return tmp_freq_up;
-            return tmp_freq_down;
-
+            // Return whichever is nearest to the wanted pitch
+            return tmp_pitch_down - tmp_pitch_up > 0 ? tmp_freq_up : tmp_freq_down;
         }
+
+double DivPlatformPOKEY::getTruePitch(int semitone) 
+{
+	double ratio = pow(2.0, 1.0 / 12.0);
+	return (parent->song.tuning / 64) * pow(ratio, semitone + 3);
+}
+
+double DivPlatformPOKEY::getPitch(int audf, int coarse_divisor, double divisor, int cycle)
+{
+	return ((chipClock / (coarse_divisor * divisor)) / (audf + cycle)) / 2;
+}
+
+int DivPlatformPOKEY::getFreq(double pitch, int coarse_divisor, double divisor, int cycle)
+{
+	return (int)round(((chipClock / (coarse_divisor * divisor)) / (2 * pitch)) - cycle);
+}
 
 int DivPlatformPOKEY::dispatch(DivCommand c) {
   switch (c.cmd) {
@@ -369,6 +354,7 @@ int DivPlatformPOKEY::dispatch(DivCommand c) {
         chan[c.chan].baseFreq=NOTE_PERIODIC(c.value);
         chan[c.chan].freqChanged=true;
         chan[c.chan].note=c.value;
+        chan[c.chan].truePitch = getTruePitch(c.value);
       }
       chan[c.chan].active=true;
       chan[c.chan].keyOn=true;

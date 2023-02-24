@@ -34,10 +34,12 @@ class DivPlatformPOKEY: public DivDispatch {
   struct Channel: public SharedChannel<int> {
     unsigned char wave;
     bool ctlChanged;
+    double truePitch;
     Channel():
       SharedChannel<int>(15),
       wave(5),
-      ctlChanged(true) {}
+      ctlChanged(true),
+      truePitch(0) {}
   };
   Channel chan[4];
   DivDispatchOscBuffer* oscBuf[4];
@@ -71,6 +73,9 @@ class DivPlatformPOKEY: public DivDispatch {
     void forceIns();
     void tick(bool sysTick=true);
     int deltaFreq(double pitch, int freq, double clock, int coarse_divisor, double divisor, int cycle, int wave);
+    double getTruePitch(int semitone);
+    double getPitch(int audf, int coarse_divisor, double divisor, int cycle);
+    int getFreq(double pitch, int coarse_divisor, double divisor, int cycle);
     void muteChannel(int ch, bool mute);
     bool keyOffAffectsArp(int ch);
     float getPostAmp();
