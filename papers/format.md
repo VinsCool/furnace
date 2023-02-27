@@ -32,6 +32,7 @@ these fields are 0 in format versions prior to 100 (0.6pre1).
 
 the format versions are:
 
+- 143: Furnace 0.6pre4
 - 142: Furnace dev142
 - 141: Furnace Tournament Edition (for intro tune contest)
 - 140: Furnace dev140
@@ -295,10 +296,12 @@ size | description
      |   - 0xff: reserved for development
      | - (compound!) means that the system is composed of two or more chips,
      |   and has to be flattened.
- 32  | sound chip volumes
+ 32  | sound chip volumes (<135) or reserved
      | - signed char, 64=1.0, 127=~2.0
- 32  | sound chip panning
+     | - as of version 135 these fields only exist for compatibility reasons.
+ 32  | sound chip panning (<135) or reserved
      | - signed char, -128=left, 127=right
+     | - as of version 135 these fields only exist for compatibility reasons.
  128 | sound chip flag pointers (>=119) or sound chip flags
      | - before 118, these were 32-bit flags.
      | - for conversion details, see the "converting from old flags" section.

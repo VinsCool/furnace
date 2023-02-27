@@ -719,7 +719,7 @@ Size=1280,776\n\
 Collapsed=0\n\
 \n\
 [Window][Debug##Default]\n\
-Pos=54,19\n\
+Pos=54,43\n\
 Size=400,400\n\
 Collapsed=0\n\
 \n\
@@ -760,13 +760,13 @@ DockId=0x00000006,2\n\
 \n\
 [Window][Pattern]\n\
 Pos=0,243\n\
-Size=1246,557\n\
+Size=939,557\n\
 Collapsed=0\n\
-DockId=0x00000013,0\n\
+DockId=0x00000017,0\n\
 \n\
 [Window][Instrument Editor]\n\
-Pos=372,102\n\
-Size=682,604\n\
+Pos=229,126\n\
+Size=856,652\n\
 Collapsed=0\n\
 \n\
 [Window][Warning]\n\
@@ -775,8 +775,8 @@ Size=264,86\n\
 Collapsed=0\n\
 \n\
 [Window][Sample Editor]\n\
-Pos=531,176\n\
-Size=613,416\n\
+Pos=47,216\n\
+Size=1075,525\n\
 Collapsed=0\n\
 \n\
 [Window][About Furnace]\n\
@@ -795,7 +795,7 @@ Collapsed=0\n\
 \n\
 [Window][Settings]\n\
 Pos=655,224\n\
-Size=601,508\n\
+Size=1280,941\n\
 Collapsed=0\n\
 \n\
 [Window][Error]\n\
@@ -856,9 +856,10 @@ Size=500,71\n\
 Collapsed=0\n\
 \n\
 [Window][Statistics]\n\
-Pos=596,307\n\
-Size=512,219\n\
+Pos=0,581\n\
+Size=1246,219\n\
 Collapsed=0\n\
+DockId=0x00000016,0\n\
 \n\
 [Window][Warning##Export VGMFileDialogOverWriteDialog]\n\
 Pos=390,351\n\
@@ -866,8 +867,8 @@ Size=500,71\n\
 Collapsed=0\n\
 \n\
 [Window][Compatibility Flags]\n\
-Pos=682,287\n\
-Size=347,262\n\
+Pos=388,132\n\
+Size=580,641\n\
 Collapsed=0\n\
 \n\
 [Window][Song Comments]\n\
@@ -914,10 +915,10 @@ Collapsed=0\n\
 DockId=0x0000000A,0\n\
 \n\
 [Window][Subsongs]\n\
-Pos=978,205\n\
-Size=302,36\n\
+Pos=978,24\n\
+Size=302,217\n\
 Collapsed=0\n\
-DockId=0x00000010,0\n\
+DockId=0x00000010,1\n\
 \n\
 [Window][Oscilloscope (per-channel)]\n\
 Pos=1095,243\n\
@@ -945,6 +946,44 @@ Pos=60,60\n\
 Size=490,407\n\
 Collapsed=0\n\
 \n\
+[Window][Speed]\n\
+Pos=978,24\n\
+Size=302,217\n\
+Collapsed=0\n\
+DockId=0x00000010,2\n\
+\n\
+[Window][Song Info##Song Information]\n\
+Pos=978,24\n\
+Size=302,217\n\
+Collapsed=0\n\
+DockId=0x00000010,0\n\
+\n\
+[Window][Effect List]\n\
+Pos=941,243\n\
+Size=305,557\n\
+Collapsed=0\n\
+DockId=0x00000018,0\n\
+\n\
+[Window][Intro]\n\
+Pos=0,0\n\
+Size=2560,1600\n\
+Collapsed=0\n\
+\n\
+[Window][Welcome]\n\
+Pos=944,666\n\
+Size=672,268\n\
+Collapsed=0\n\
+\n\
+[Window][Grooves]\n\
+Pos=416,314\n\
+Size=463,250\n\
+Collapsed=0\n\
+\n\
+[Window][Clock]\n\
+Pos=60,60\n\
+Size=145,184\n\
+Collapsed=0\n\
+\n\
 [Docking][Data]\n\
 DockSpace             ID=0x8B93E3BD Window=0xA787BDB4 Pos=0,24 Size=1280,776 Split=Y Selected=0x6C01C512\n\
   DockNode            ID=0x00000001 Parent=0x8B93E3BD SizeRef=1280,217 Split=X Selected=0xF3094A52\n\
@@ -956,14 +995,18 @@ DockSpace             ID=0x8B93E3BD Window=0xA787BDB4 Pos=0,24 Size=1280,776 Spl
             DockNode  ID=0x0000000D Parent=0x00000009 SizeRef=292,68 HiddenTabBar=1 Selected=0xE57B1A9D\n\
             DockNode  ID=0x0000000E Parent=0x00000009 SizeRef=292,105 HiddenTabBar=1 Selected=0x6D682373\n\
           DockNode    ID=0x0000000A Parent=0x00000005 SizeRef=292,40 HiddenTabBar=1 Selected=0x0DE44CFF\n\
-        DockNode      ID=0x00000006 Parent=0x00000008 SizeRef=323,406 Selected=0xD2AD486B\n\
+        DockNode      ID=0x00000006 Parent=0x00000008 SizeRef=323,406 Selected=0xB75D68C7\n\
     DockNode          ID=0x00000004 Parent=0x00000001 SizeRef=302,231 Split=Y Selected=0x60B9D088\n\
       DockNode        ID=0x0000000F Parent=0x00000004 SizeRef=302,179 Selected=0x60B9D088\n\
-      DockNode        ID=0x00000010 Parent=0x00000004 SizeRef=302,36 HiddenTabBar=1 Selected=0x723A6369\n\
+      DockNode        ID=0x00000010 Parent=0x00000004 SizeRef=302,36 Selected=0x82BEE2E5\n\
   DockNode            ID=0x00000002 Parent=0x8B93E3BD SizeRef=1280,512 Split=X Selected=0x6C01C512\n\
     DockNode          ID=0x0000000B Parent=0x00000002 SizeRef=1246,503 Split=X Selected=0xB9ADD0D5\n\
       DockNode        ID=0x00000011 Parent=0x0000000B SizeRef=1093,557 Split=X Selected=0xB9ADD0D5\n\
-        DockNode      ID=0x00000013 Parent=0x00000011 SizeRef=827,557 CentralNode=1 HiddenTabBar=1 Selected=0xB9ADD0D5\n\
+        DockNode      ID=0x00000013 Parent=0x00000011 SizeRef=827,557 Split=Y Selected=0xB9ADD0D5\n\
+          DockNode    ID=0x00000015 Parent=0x00000013 SizeRef=1246,336 Split=X Selected=0xB9ADD0D5\n\
+            DockNode  ID=0x00000017 Parent=0x00000015 SizeRef=939,557 CentralNode=1 HiddenTabBar=1 Selected=0xB9ADD0D5\n\
+            DockNode  ID=0x00000018 Parent=0x00000015 SizeRef=305,557 Selected=0xB94874DD\n\
+          DockNode    ID=0x00000016 Parent=0x00000013 SizeRef=1246,219 Selected=0xAD8E88F2\n\
         DockNode      ID=0x00000014 Parent=0x00000011 SizeRef=417,557 Selected=0x425428FB\n\
       DockNode        ID=0x00000012 Parent=0x0000000B SizeRef=151,557 HiddenTabBar=1 Selected=0x4C07BC58\n\
     DockNode          ID=0x0000000C Parent=0x00000002 SizeRef=32,503 HiddenTabBar=1 Selected=0x644DA2C1\n";
@@ -1201,7 +1244,7 @@ void FurnaceGUI::valueInput(int num, bool direct, int target) {
   }
 
 void FurnaceGUI::keyDown(SDL_Event& ev) {
-  if (introPos<9.0 && !shortIntro) return;
+  if (introPos<11.0 && !shortIntro) return;
   if (ImGuiFileDialog::Instance()->IsOpened()) return;
   if (aboutOpen) return;
 
@@ -2718,7 +2761,7 @@ int _processEvent(void* instance, SDL_Event* event) {
 }
 
 int FurnaceGUI::processEvent(SDL_Event* ev) {
-  if (introPos<9.0 && !shortIntro) return 1;
+  if (introPos<11.0 && !shortIntro) return 1;
 #ifdef IS_MOBILE
   if (ev->type==SDL_APP_TERMINATING) {
     // TODO: save last song state here
@@ -2931,7 +2974,7 @@ void FurnaceGUI::pointDown(int x, int y, int button) {
     bindSetTarget=0;
     bindSetPrevValue=0;
   }
-  if (introPos<9.0 && !shortIntro) {
+  if (introPos<11.0 && !shortIntro) {
     introSkipDo=true;
   }
 }
@@ -2951,7 +2994,7 @@ void FurnaceGUI::pointUp(int x, int y, int button) {
   macroDragLastY=-1;
   macroLoopDragActive=false;
   waveDragActive=false;
-  if (introPos<9.0 && introSkip<0.5 && !shortIntro) {
+  if (introPos<11.0 && introSkip<0.5 && !shortIntro) {
     introSkipDo=false;
   }
   if (sampleDragActive) {
@@ -3437,6 +3480,14 @@ bool FurnaceGUI::loop() {
       continue;
     }
 
+    if (firstFrame) {
+      if (!tutorial.introPlayed || settings.alwaysPlayIntro==3 || (settings.alwaysPlayIntro==2 && curFileName.empty())) {
+        unsigned char* introTemp=new unsigned char[intro_fur_len];
+        memcpy(introTemp,intro_fur,intro_fur_len);
+        e->load(introTemp,intro_fur_len);
+      }
+    }
+
     layoutTimeBegin=SDL_GetPerformanceCounter();
 
     ImGui_ImplSDLRenderer_NewFrame();
@@ -3644,69 +3695,67 @@ bool FurnaceGUI::loop() {
           }
           ImGui::EndMenu();
         }
-        if (!basicMode) {
-          ImGui::Separator();
-          if (ImGui::BeginMenu("add chip...")) {
-            DivSystem picked=systemPicker();
-            if (picked!=DIV_SYSTEM_NULL) {
-              if (!e->addSystem(picked)) {
-                showError("cannot add chip! ("+e->getLastError()+")");
+        ImGui::Separator();
+        if (ImGui::BeginMenu("add chip...")) {
+          DivSystem picked=systemPicker();
+          if (picked!=DIV_SYSTEM_NULL) {
+            if (!e->addSystem(picked)) {
+              showError("cannot add chip! ("+e->getLastError()+")");
+            } else {
+              MARK_MODIFIED;
+            }
+            ImGui::CloseCurrentPopup();
+            if (e->song.autoSystem) {
+              autoDetectSystem();
+            }
+            updateWindowTitle();
+          }
+          ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("configure chip...")) {
+          for (int i=0; i<e->song.systemLen; i++) {
+            if (ImGui::TreeNode(fmt::sprintf("%d. %s##_SYSP%d",i+1,getSystemName(e->song.system[i]),i).c_str())) {
+              drawSysConf(i,e->song.system[i],e->song.systemFlags[i],true);
+              ImGui::TreePop();
+            }
+          }
+          ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("change chip...")) {
+          ImGui::Checkbox("Preserve channel positions",&preserveChanPos);
+          for (int i=0; i<e->song.systemLen; i++) {
+            if (ImGui::BeginMenu(fmt::sprintf("%d. %s##_SYSC%d",i+1,getSystemName(e->song.system[i]),i).c_str())) {
+              DivSystem picked=systemPicker();
+              if (picked!=DIV_SYSTEM_NULL) {
+                e->changeSystem(i,picked,preserveChanPos);
+                MARK_MODIFIED;
+                if (e->song.autoSystem) {
+                  autoDetectSystem();
+                }
+                updateWindowTitle();
+                ImGui::CloseCurrentPopup();
+              }
+              ImGui::EndMenu();
+            }
+          }
+          ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("remove chip...")) {
+          ImGui::Checkbox("Preserve channel positions",&preserveChanPos);
+          for (int i=0; i<e->song.systemLen; i++) {
+            if (ImGui::MenuItem(fmt::sprintf("%d. %s##_SYSR%d",i+1,getSystemName(e->song.system[i]),i).c_str())) {
+              if (!e->removeSystem(i,preserveChanPos)) {
+                showError("cannot remove chip! ("+e->getLastError()+")");
               } else {
                 MARK_MODIFIED;
               }
-              ImGui::CloseCurrentPopup();
               if (e->song.autoSystem) {
                 autoDetectSystem();
-              }
-              updateWindowTitle();
-            }
-            ImGui::EndMenu();
-          }
-          if (ImGui::BeginMenu("configure chip...")) {
-            for (int i=0; i<e->song.systemLen; i++) {
-              if (ImGui::TreeNode(fmt::sprintf("%d. %s##_SYSP%d",i+1,getSystemName(e->song.system[i]),i).c_str())) {
-                drawSysConf(i,e->song.system[i],e->song.systemFlags[i],true);
-                ImGui::TreePop();
+                updateWindowTitle();
               }
             }
-            ImGui::EndMenu();
           }
-          if (ImGui::BeginMenu("change chip...")) {
-            ImGui::Checkbox("Preserve channel positions",&preserveChanPos);
-            for (int i=0; i<e->song.systemLen; i++) {
-              if (ImGui::BeginMenu(fmt::sprintf("%d. %s##_SYSC%d",i+1,getSystemName(e->song.system[i]),i).c_str())) {
-                DivSystem picked=systemPicker();
-                if (picked!=DIV_SYSTEM_NULL) {
-                  e->changeSystem(i,picked,preserveChanPos);
-                  MARK_MODIFIED;
-                  if (e->song.autoSystem) {
-                    autoDetectSystem();
-                  }
-                  updateWindowTitle();
-                  ImGui::CloseCurrentPopup();
-                }
-                ImGui::EndMenu();
-              }
-            }
-            ImGui::EndMenu();
-          }
-          if (ImGui::BeginMenu("remove chip...")) {
-            ImGui::Checkbox("Preserve channel positions",&preserveChanPos);
-            for (int i=0; i<e->song.systemLen; i++) {
-              if (ImGui::MenuItem(fmt::sprintf("%d. %s##_SYSR%d",i+1,getSystemName(e->song.system[i]),i).c_str())) {
-                if (!e->removeSystem(i,preserveChanPos)) {
-                  showError("cannot remove chip! ("+e->getLastError()+")");
-                } else {
-                  MARK_MODIFIED;
-                }
-                if (e->song.autoSystem) {
-                  autoDetectSystem();
-                  updateWindowTitle();
-                }
-              }
-            }
-            ImGui::EndMenu();
-          }
+          ImGui::EndMenu();
         }
         ImGui::Separator();
         if (ImGui::MenuItem("restore backup",BIND_FOR(GUI_ACTION_OPEN_BACKUP))) {
@@ -3784,11 +3833,13 @@ bool FurnaceGUI::loop() {
         }
         if (ImGui::MenuItem("orders",BIND_FOR(GUI_ACTION_WINDOW_ORDERS),ordersOpen)) ordersOpen=!ordersOpen;
         if (ImGui::MenuItem("pattern",BIND_FOR(GUI_ACTION_WINDOW_PATTERN),patternOpen)) patternOpen=!patternOpen;
+        if (ImGui::MenuItem("mixer",BIND_FOR(GUI_ACTION_WINDOW_MIXER),mixerOpen)) mixerOpen=!mixerOpen;
         if (!basicMode) {
-          if (ImGui::MenuItem("mixer",BIND_FOR(GUI_ACTION_WINDOW_MIXER),mixerOpen)) mixerOpen=!mixerOpen;
           if (ImGui::MenuItem("grooves",BIND_FOR(GUI_ACTION_WINDOW_GROOVES),groovesOpen)) groovesOpen=!groovesOpen;
           if (ImGui::MenuItem("channels",BIND_FOR(GUI_ACTION_WINDOW_CHANNELS),channelsOpen)) channelsOpen=!channelsOpen;
-          if (ImGui::MenuItem("pattern manager",BIND_FOR(GUI_ACTION_WINDOW_PAT_MANAGER),patManagerOpen)) patManagerOpen=!patManagerOpen;
+        }
+        if (ImGui::MenuItem("pattern manager",BIND_FOR(GUI_ACTION_WINDOW_PAT_MANAGER),patManagerOpen)) patManagerOpen=!patManagerOpen;
+        if (!basicMode) {
           if (ImGui::MenuItem("chip manager",BIND_FOR(GUI_ACTION_WINDOW_SYS_MANAGER),sysManagerOpen)) sysManagerOpen=!sysManagerOpen;
           if (ImGui::MenuItem("compatibility flags",BIND_FOR(GUI_ACTION_WINDOW_COMPAT_FLAGS),compatFlagsOpen)) compatFlagsOpen=!compatFlagsOpen;
         }
@@ -3999,7 +4050,7 @@ bool FurnaceGUI::loop() {
       drawWaveEdit();
       drawInsList();
       drawInsEdit();
-      if (!basicMode) drawMixer();
+      drawMixer();
 
       readOsc();
 
@@ -4014,7 +4065,9 @@ bool FurnaceGUI::loop() {
       drawNotes();
       if (!basicMode) {
         drawChannels();
-        drawPatManager();
+      }
+      drawPatManager();
+      if (!basicMode) {
         drawSysManager();
       }
       drawClock();
@@ -4022,6 +4075,8 @@ bool FurnaceGUI::loop() {
       drawLog();
       drawEffectList();
     }
+
+    activateTutorial(GUI_TUTORIAL_OVERVIEW);
 
     if (inspectorOpen) ImGui::ShowMetricsWindow(&inspectorOpen);
 
@@ -4631,12 +4686,12 @@ bool FurnaceGUI::loop() {
       }
     }
 
-    if (warnQuit) {
+    if (warnQuit && introPos>=11.0) {
       warnQuit=false;
       ImGui::OpenPopup("Warning");
     }
 
-    if (displayError) {
+    if (displayError && introPos>=11.0) {
       displayError=false;
       ImGui::OpenPopup("Error");
     }
@@ -4684,6 +4739,8 @@ bool FurnaceGUI::loop() {
       }
       ImGui::EndPopup();
     }
+
+    drawTutorial();
 
     ImVec2 newSongMinSize=mobileUI?ImVec2(canvasW-(portrait?0:(60.0*dpiScale)),canvasH-60.0*dpiScale):ImVec2(400.0f*dpiScale,200.0f*dpiScale);
     ImVec2 newSongMaxSize=ImVec2(canvasW-((mobileUI && !portrait)?(60.0*dpiScale):0),canvasH-(mobileUI?(60.0*dpiScale):0));
@@ -5209,7 +5266,7 @@ bool FurnaceGUI::loop() {
       }
       drawIntro(introPos);
     } else {
-      introPos=10.0;
+      introPos=12.0;
     }
 
     layoutTimeEnd=SDL_GetPerformanceCounter();
@@ -5362,7 +5419,7 @@ bool FurnaceGUI::init() {
   introMonOpen=e->getConfBool("introMonOpen",false);
   regViewOpen=e->getConfBool("regViewOpen",false);
   logOpen=e->getConfBool("logOpen",false);
-  effectListOpen=e->getConfBool("effectListOpen",false);
+  effectListOpen=e->getConfBool("effectListOpen",true);
   subSongsOpen=e->getConfBool("subSongsOpen",true);
   findOpen=e->getConfBool("findOpen",false);
   spoilerOpen=e->getConfBool("spoilerOpen",false);
@@ -5441,6 +5498,7 @@ bool FurnaceGUI::init() {
   }
 
   initSystemPresets();
+  initTutorial();
 
   e->setAutoNotePoly(noteInputPoly);
 
@@ -5666,16 +5724,11 @@ bool FurnaceGUI::init() {
     oldPat[i]=new DivPattern;
   }
 
-  if ((!tutorial.introPlayed || settings.alwaysPlayIntro>=2) && curFileName.empty()) {
-    unsigned char* introTemp=new unsigned char[intro_fur_len];
-    memcpy(introTemp,intro_fur,intro_fur_len);
-    e->load(introTemp,intro_fur_len);
-  }
-
   firstFrame=true;
 
   // TODO: MIDI mapping time!
   e->setMidiCallback([this](const TAMidiMessage& msg) -> int {
+    if (introPos<11.0) return -2;
     midiLock.lock();
     midiQueue.push(msg);
     midiLock.unlock();
@@ -6279,7 +6332,9 @@ FurnaceGUI::FurnaceGUI():
   monitorPos(0.0),
   mustClear(2),
   initialScreenWipe(1.0f),
-  introSkipDo(false) {
+  introSkipDo(false),
+  curTutorial(-1),
+  curTutorialStep(0) {
   // value keys
   valueKeys[SDLK_0]=0;
   valueKeys[SDLK_1]=1;
